@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>战斗结算</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .result-container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .result-container h1 {
+            color: var(--secondary);
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        .result-container h2 {
+            color: var(--primary);
+            margin-bottom: 15px;
+            font-size: 2rem;
+        }
+        .result-container .mvp-info {
+            font-size: 1.2em;
+            color: #555;
+            margin-bottom: 25px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .stats-table th, .stats-table td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+        .stats-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .stats-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .stats-table td.mvp {
+            font-weight: bold;
+            color: var(--success);
+        }
+        .action-buttons {
+            margin-top: 30px;
+        }
+        .action-buttons a, .action-buttons button {
+            margin: 0 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="result-container">
+        <h1>战斗结算</h1>
+        
+        <h2>{{ final_result }}</h2>
+
+        {% set final_step = battle_steps | selectattr('event', 'equalto', 'end') | first %}
+        {% if final_step and final_step.character_stats %}
+            <h3>详细统计</h3>
+            <table class="stats-table">
+                <thead>
+                    <tr>
+                        <th>角色</th>
+                        <th>队伍</th>
+                        <th>输出伤害</th>
+                        <th>承受伤害</th>
+                        <th>治疗量</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for char in final_step.character_stats %}
+                    <tr>
+                        <td>{{ char.name }}</td>
+                        <td>{{ char.team }}</td>
+                        <td>{{ char.damage_dealt | default(0) }}</td>
+                        <td>{{ char.damage_taken | default(0) }}</td>
+                        <td>{{ char.healing_done | default(0) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+
+        <h3>战斗日志</h3>
+        <div class="battle-log">
+            {% for step in battle_steps %}
+                {% if step.event != "end" %} {# 不显示最终结果消息，因为它已经在h2中显示 #}
+                    <p>{{ step.message }}</p>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <div class="action-buttons">
+            <a href="/">返回主页</a>
+            <a href="/douququ">重新开始战斗</a>
+        </div>
+    </div>
+</body>
+</html>

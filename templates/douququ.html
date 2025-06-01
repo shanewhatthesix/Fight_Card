@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>斗蛐蛐</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>斗蛐蛐竞技场</h1>
+:start_line:11
+-------
+        <div class="battle-controls">
+            <div class="battle-mode-selection">
+                <label for="battle-mode">选择模式:</label>
+                <select id="battle-mode">
+                    <option value="1v1">1V1 模式</option>
+                    <option value="2v2">2V2 模式</option>
+                </select>
+            </div>
+
+            <div class="character-selection 1v1-mode" id="one-v-one-mode-selection">
+                <label for="char1-select">角色 1:</label>
+                <select id="char1-select"></select>
+                <label for="char2-select">角色 2:</label>
+                <select id="char2-select"></select>
+            </div>
+
+            <div class="character-selection 2v2-mode" id="two-v-two-mode-selection" style="display: none;">
+                <div class="team-selection">
+                    <h3>队伍 1</h3>
+                    <label for="team1-char1-select">角色 1:</label>
+                    <select id="team1-char1-select"></select>
+                    <label for="team1-char2-select">角色 2:</label>
+                    <select id="team1-char2-select"></select>
+                </div>
+                <div class="team-selection">
+                    <h3>队伍 2</h3>
+                    <label for="team2-char1-select">角色 1:</label>
+                    <select id="team2-char1-select"></select>
+                    <label for="team2-char2-select">角色 2:</label>
+                    <select id="team2-char2-select"></select>
+                </div>
+            </div>
+
+            <button id="start-battle-btn">开始战斗</button>
+            <button id="reset-battle-btn" style="display: none;">重置</button>
+            <label for="battle-speed">战斗速度:</label>
+            <select id="battle-speed">
+                <option value="1000">慢速</option>
+                <option value="500" selected>正常</option>
+                <option value="200">快速</option>
+                <option value="50">极速</option>
+            </select>
+        </div>
+        
+        <div class="battle-display">
+            <div class="team-display" id="team1-display">
+                <h2 class="team-name">队伍 1</h2>
+                <div id="character1-display" class="character-display">
+                    <h3 id="char1-name"></h3>
+                    <img id="char1-image" src="" alt="角色1" class="battle-character-image">
+                    <div class="hp-bar-container">
+                        <div id="char1-hp-bar" class="hp-bar"></div>
+                    </div>
+                    <p>HP: <span id="char1-current-hp"></span> / <span id="char1-max-hp"></span></p>
+                </div>
+                <div id="character3-display" class="character-display" style="display: none;">
+                    <h3 id="char3-name"></h3>
+                    <img id="char3-image" src="" alt="角色3" class="battle-character-image">
+                    <div class="hp-bar-container">
+                        <div id="char3-hp-bar" class="hp-bar"></div>
+                    </div>
+                    <p>HP: <span id="char3-current-hp"></span> / <span id="char3-max-hp"></span></p>
+                </div>
+            </div>
+            
+            <div class="vs-text">VS</div>
+            
+            <div class="team-display" id="team2-display">
+                <h2 class="team-name">队伍 2</h2>
+                <div id="character2-display" class="character-display">
+                    <h3 id="char2-name"></h3>
+                    <img id="char2-image" src="" alt="角色2" class="battle-character-image">
+                    <div class="hp-bar-container">
+                        <div id="char2-hp-bar" class="hp-bar"></div>
+                    </div>
+                    <p>HP: <span id="char2-current-hp"></span> / <span id="char2-max-hp"></span></p>
+                </div>
+                <div id="character4-display" class="character-display" style="display: none;">
+                    <h3 id="char4-name"></h3>
+                    <img id="char4-image" src="" alt="角色4" class="battle-character-image">
+                    <div class="hp-bar-container">
+                        <div id="char4-hp-bar" class="hp-bar"></div>
+                    </div>
+                    <p>HP: <span id="char4-current-hp"></span> / <span id="char4-max-hp"></span></p>
+                </div>
+            </div>
+        </div>
+
+        <a href="/">返回主页</a>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const battleModeSelect = document.getElementById('battle-mode');
+            const oneVoneModeDiv = document.getElementById('one-v-one-mode-selection');
+            const twoVtwoModeDiv = document.getElementById('two-v-two-mode-selection');
+
+            const startBattleBtn = document.getElementById('start-battle-btn');
+            const resetBattleBtn = document.getElementById('reset-battle-btn');
+            
+            const char1Name = document.getElementById('char1-name');
+            const char1Image = document.getElementById('char1-image');
+            const char1HpBar = document.getElementById('char1-hp-bar');
+            const char1CurrentHp = document.getElementById('char1-current-hp');
+            const char1MaxHp = document.getElementById('char1-max-hp');
+
+            const char2Name = document.getElementById('char2-name');
+            const char2Image = document.getElementById('char2-image');
+            const char2HpBar = document.getElementById('char2-hp-bar');
+            const char2CurrentHp = document.getElementById('char2-current-hp');
+            const char2MaxHp = document.getElementById('char2-max-hp');
+
+            const char3Name = document.getElementById('char3-name');
+            const char3Image = document.getElementById('char3-image');
+            const char3HpBar = document.getElementById('char3-hp-bar');
+            const char3CurrentHp = document.getElementById('char3-current-hp');
+            const char3MaxHp = document.getElementById('char3-max-hp');
+            const character3Display = document.getElementById('character3-display');
+
+            const char4Name = document.getElementById('char4-name');
+            const char4Image = document.getElementById('char4-image');
+            const char4HpBar = document.getElementById('char4-hp-bar');
+            const char4CurrentHp = document.getElementById('char4-current-hp');
+            const char4MaxHp = document.getElementById('char4-max-hp');
+            const character4Display = document.getElementById('character4-display');
+
+            const char1Select = document.getElementById('char1-select');
+            const char2Select = document.getElementById('char2-select');
+            const team1Char1Select = document.getElementById('team1-char1-select');
+            const team1Char2Select = document.getElementById('team1-char2-select');
+            const team2Char1Select = document.getElementById('team2-char1-select');
+            const team2Char2Select = document.getElementById('team2-char2-select');
+
+            let allCharacters = []; // Store all characters for later use
+
+            function resetCharacterDisplay(charNameElem, charImageElem, charHpBarElem, charCurrentHpElem, charMaxHpElem, charDisplayElem) {
+                charNameElem.textContent = '';
+                charImageElem.src = '';
+                charImageElem.alt = '';
+                charHpBarElem.style.width = '100%';
+                charHpBarElem.style.backgroundColor = 'green';
+                charCurrentHpElem.textContent = '0';
+                charMaxHpElem.textContent = '0';
+                if (charDisplayElem) {
+                    charDisplayElem.style.filter = 'none'; // Remove grayscale
+                }
+            }
+
+            function resetBattleDisplay() {
+                resetCharacterDisplay(char1Name, char1Image, char1HpBar, char1CurrentHp, char1MaxHp);
+                resetCharacterDisplay(char2Name, char2Image, char2HpBar, char2CurrentHp, char2MaxHp);
+                resetCharacterDisplay(char3Name, char3Image, char3HpBar, char3CurrentHp, char3MaxHp, character3Display);
+                resetCharacterDisplay(char4Name, char4Image, char4HpBar, char4CurrentHp, char4MaxHp, character4Display);
+
+                startBattleBtn.style.display = 'inline-block';
+                resetBattleBtn.style.display = 'none';
+                
+                // Hide 2v2 characters if 1v1 mode is selected
+                if (battleModeSelect.value === '1v1') {
+                    character3Display.style.display = 'none';
+                    character4Display.style.display = 'none';
+                }
+            }
+
+            // Function to populate dropdowns
+            function populateDropdowns(selectElement) {
+                // Clear existing options
+                selectElement.innerHTML = '<option value="">请选择角色</option>';
+                allCharacters.forEach(char => {
+                    const option = document.createElement('option');
+                    option.value = char.id;
+                    option.textContent = char.name;
+                    selectElement.appendChild(option);
+                });
+            }
+
+            // Fetch characters and populate dropdowns
+            fetch('/api/characters')
+                .then(response => response.json())
+                .then(data => {
+                    console.log("Fetched data:", data); // Add this line for debugging
+                    allCharacters = data.characters;
+                    console.log("All characters:", allCharacters); // Add this line for debugging
+                    
+                    // Populate all dropdowns
+                    populateDropdowns(char1Select);
+                    populateDropdowns(char2Select);
+                    populateDropdowns(team1Char1Select);
+                    populateDropdowns(team1Char2Select);
+                    populateDropdowns(team2Char1Select);
+                    populateDropdowns(team2Char2Select);
+
+                    // Select default characters for 1v1
+                    if (allCharacters.length >= 2) {
+                        char1Select.value = allCharacters[0].id;
+                        char2Select.value = allCharacters[1].id;
+                    } else if (allCharacters.length === 1) {
+                        char1Select.value = allCharacters[0].id;
+                        char2Select.value = allCharacters[0].id;
+                    } else {
+                        char1Select.value = ""; // No characters, set to default "请选择角色"
+                        char2Select.value = "";
+                    }
+
+                    // Select default characters for 2v2
+                    if (allCharacters.length >= 4) {
+                        team1Char1Select.value = allCharacters[0].id;
+                        team1Char2Select.value = allCharacters[1].id;
+                        team2Char1Select.value = allCharacters[2].id;
+                        team2Char2Select.value = allCharacters[3].id;
+                    } else if (allCharacters.length >= 2) {
+                        // Fallback if not enough for 2v2, but enough for 1v1
+                        team1Char1Select.value = allCharacters[0].id;
+                        team1Char2Select.value = allCharacters[0].id;
+                        team2Char1Select.value = allCharacters[1].id;
+                        team2Char2Select.value = allCharacters[1].id;
+                    } else if (allCharacters.length === 1) {
+                        team1Char1Select.value = allCharacters[0].id;
+                        team1Char2Select.value = allCharacters[0].id;
+                        team2Char1Select.value = allCharacters[0].id;
+                        team2Char2Select.value = allCharacters[0].id;
+                    } else {
+                        team1Char1Select.value = ""; // No characters, set to default "请选择角色"
+                        team1Char2Select.value = "";
+                        team2Char1Select.value = "";
+                        team2Char2Select.value = "";
+                    }
+                })
+                .catch(error => console.error('Error fetching characters:', error));
+
+            // Handle battle mode change
+            battleModeSelect.addEventListener('change', function() {
+                if (this.value === '1v1') {
+                    oneVoneModeDiv.style.display = 'flex';
+                    twoVtwoModeDiv.style.display = 'none';
+                    character3Display.style.display = 'none';
+                    character4Display.style.display = 'none';
+                } else {
+                    oneVoneModeDiv.style.display = 'none';
+                    twoVtwoModeDiv.style.display = 'flex';
+                    character3Display.style.display = 'block';
+                    character4Display.style.display = 'block';
+                }
+                resetBattleDisplay(); // Reset display when mode changes
+            });
+
+            startBattleBtn.addEventListener('click', function() {
+                let fetchUrl = '';
+                const battleMode = battleModeSelect.value;
+
+                if (battleMode === '1v1') {
+                    const char1Id = char1Select.value;
+                    const char2Id = char2Select.value;
+                    if (!char1Id || !char2Id) {
+                        alert('请选择两个角色进行战斗！');
+                        return;
+                    }
+                    fetchUrl = `/battle?mode=1v1&char1_id=${char1Id}&char2_id=${char2Id}`;
+                } else if (battleMode === '2v2') { // 2v2 mode
+                    const team1Char1Id = team1Char1Select.value;
+                    const team1Char2Id = team1Char2Select.value;
+                    const team2Char1Id = team2Char1Select.value;
+                    const team2Char2Id = team2Char2Select.value;
+
+                    if (!team1Char1Id || !team1Char2Id || !team2Char1Id || !team2Char2Id) {
+                        alert('请为两个队伍选择四个角色进行战斗！');
+                        return;
+                    }
+                    fetchUrl = `/battle?mode=2v2&team1_char1_id=${team1Char1Id}&team1_char2_id=${team1Char2Id}&team2_char1_id=${team2Char1Id}&team2_char2_id=${team2Char2Id}`;
+                } else {
+                    alert('请选择有效的战斗模式！');
+                    return;
+                }
+
+                fetch(fetchUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            alert(data.error);
+                            startBattleBtn.style.display = 'inline-block';
+                            resetBattleBtn.style.display = 'none';
+                            return;
+                        }
+
+                        startBattleBtn.style.display = 'none';
+                        resetBattleBtn.style.display = 'inline-block';
+
+                        const battleSpeedSelect = document.getElementById('battle-speed');
+                        let baseDelay = parseInt(battleSpeedSelect.value);
+
+                        let delay = 0;
+                        data.steps.forEach(step => {
+                            setTimeout(() => {
+                                if (step.event === "start") {
+                                    // Initialize character displays based on the battle mode
+                                    // 根据战斗模式从 allCharacters 中找到对应的角色数据进行初始化
+                                    let selectedChar1, selectedChar2, selectedChar3, selectedChar4;
+
+                                    if (battleModeSelect.value === '1v1') {
+                                        selectedChar1 = allCharacters.find(c => c.id === parseInt(char1Select.value));
+                                        selectedChar2 = allCharacters.find(c => c.id === parseInt(char2Select.value));
+                                    } else { // 2v2 mode
+                                        selectedChar1 = allCharacters.find(c => c.id === parseInt(team1Char1Select.value));
+                                        selectedChar3 = allCharacters.find(c => c.id === parseInt(team1Char2Select.value));
+                                        selectedChar2 = allCharacters.find(c => c.id === parseInt(team2Char1Select.value));
+                                        selectedChar4 = allCharacters.find(c => c.id === parseInt(team2Char2Select.value));
+                                    }
+
+                                    if (battleModeSelect.value === '1v1') {
+                                        if (selectedChar1) {
+                                            char1Name.textContent = selectedChar1.name;
+                                            char1Image.src = selectedChar1.image ? `/assets/${selectedChar1.image}` : '';
+                                            char1Image.alt = selectedChar1.name;
+                                            char1MaxHp.textContent = selectedChar1.stats.hp;
+                                            char1CurrentHp.textContent = selectedChar1.stats.hp;
+                                            char1HpBar.style.width = '100%';
+                                            char1HpBar.style.backgroundColor = 'green';
+                                        }
+                                        if (selectedChar2) {
+                                            char2Name.textContent = selectedChar2.name;
+                                            char2Image.src = selectedChar2.image ? `/assets/${selectedChar2.image}` : '';
+                                            char2Image.alt = selectedChar2.name;
+                                            char2MaxHp.textContent = selectedChar2.stats.hp;
+                                            char2CurrentHp.textContent = selectedChar2.stats.hp;
+                                            char2HpBar.style.width = '100%';
+                                            char2HpBar.style.backgroundColor = 'green';
+                                        }
+                                    } else { // 2v2 mode
+                                        // 队伍1的第一个角色
+                                        if (selectedChar1) {
+                                            char1Name.textContent = selectedChar1.name;
+                                            char1Image.src = selectedChar1.image ? `/assets/${selectedChar1.image}` : '';
+                                            char1Image.alt = selectedChar1.name;
+                                            char1MaxHp.textContent = selectedChar1.stats.hp;
+                                            char1CurrentHp.textContent = selectedChar1.stats.hp;
+                                            char1HpBar.style.width = '100%';
+                                            char1HpBar.style.backgroundColor = 'green';
+                                        }
+                                        // 队伍1的第二个角色
+                                        if (selectedChar3) {
+                                            character3Display.style.display = 'block';
+                                            char3Name.textContent = selectedChar3.name;
+                                            char3Image.src = selectedChar3.image ? `/assets/${selectedChar3.image}` : '';
+                                            char3Image.alt = selectedChar3.name;
+                                            char3MaxHp.textContent = selectedChar3.stats.hp;
+                                            char3CurrentHp.textContent = selectedChar3.stats.hp;
+                                            char3HpBar.style.width = '100%';
+                                            char3HpBar.style.backgroundColor = 'green';
+                                        }
+                                        // 队伍2的第一个角色
+                                        if (selectedChar2) {
+                                            char2Name.textContent = selectedChar2.name;
+                                            char2Image.src = selectedChar2.image ? `/assets/${selectedChar2.image}` : '';
+                                            char2Image.alt = selectedChar2.name;
+                                            char2MaxHp.textContent = selectedChar2.stats.hp;
+                                            char2CurrentHp.textContent = selectedChar2.stats.hp;
+                                            char2HpBar.style.width = '100%';
+                                            char2HpBar.style.backgroundColor = 'green';
+                                        }
+                                        // 队伍2的第二个角色
+                                        if (selectedChar4) {
+                                            character4Display.style.display = 'block';
+                                            char4Name.textContent = selectedChar4.name;
+                                            char4Image.src = selectedChar4.image ? `/assets/${selectedChar4.image}` : '';
+                                            char4Image.alt = selectedChar4.name;
+                                            char4MaxHp.textContent = selectedChar4.stats.hp;
+                                            char4CurrentHp.textContent = selectedChar4.stats.hp;
+                                            char4HpBar.style.width = '100%';
+                                            char4HpBar.style.backgroundColor = 'green';
+                                        }
+                                    }
+                                } else if (step.event === "character_turn") {
+                                    let characterImage;
+                                    if (step.character === char1Name.textContent) characterImage = char1Image;
+                                    else if (step.character === char2Name.textContent) characterImage = char2Image;
+                                    else if (step.character === char3Name.textContent) characterImage = char3Image;
+                                    else if (step.character === char4Name.textContent) characterImage = char4Image;
+                                    
+                                    if (characterImage) {
+                                        characterImage.classList.add('character-attacking');
+                                        setTimeout(() => {
+                                            characterImage.classList.remove('character-attacking');
+                                        }, 500); // Match attack-animation duration
+                                    }
+                                } else if (step.event === "use_skill") {
+                                    let defenderDisplay;
+                                    if (step.defender === char1Name.textContent) defenderDisplay = document.getElementById('character1-display');
+                                    else if (step.defender === char2Name.textContent) defenderDisplay = document.getElementById('character2-display');
+                                    else if (step.defender === char3Name.textContent) defenderDisplay = document.getElementById('character3-display');
+                                    else if (step.defender === char4Name.textContent) defenderDisplay = document.getElementById('character4-display');
+                                    
+                                    if (defenderDisplay) {
+                                        const skillTextDiv = document.createElement('div');
+                                        skillTextDiv.classList.add('skill-text-display');
+                                        skillTextDiv.textContent = `「${step.character}」使用了「${step.skill}」！`; /* 只显示攻击者和技能 */
+                                        defenderDisplay.appendChild(skillTextDiv);
+
+                                        const skillEffectDiv = document.createElement('div');
+                                        skillEffectDiv.classList.add('skill-effect');
+                                        defenderDisplay.appendChild(skillEffectDiv);
+
+                                        setTimeout(() => {
+                                            skillTextDiv.remove();
+                                            skillEffectDiv.remove(); /* 保持移除，如果不需要可以考虑删除此行 */
+                                        }, 6000); // 延长留存时间到3秒
+                                    }
+                                } else if (step.event === "deal_damage") {
+                                    let defenderDisplay;
+                                    if (step.defender === char1Name.textContent) defenderDisplay = document.getElementById('character1-display');
+                                    else if (step.defender === char2Name.textContent) defenderDisplay = document.getElementById('character2-display');
+                                    else if (step.defender === char3Name.textContent) defenderDisplay = document.getElementById('character3-display');
+                                    else if (step.defender === char4Name.textContent) defenderDisplay = document.getElementById('character4-display');
+                                    
+                                    if (defenderDisplay) {
+                                        const damageNumberDiv = document.createElement('div');
+                                        damageNumberDiv.classList.add('damage-number');
+                                        damageNumberDiv.textContent = `-${step.damage_dealt}`;
+                                        defenderDisplay.appendChild(damageNumberDiv);
+                                        setTimeout(() => {
+                                            damageNumberDiv.remove();
+                                        }, 1000); // Match damage-animation duration (1s)
+                                    }
+                                } else if (step.event === "hp_update") {
+                                    const characterName = step.character;
+                                    const currentHp = step.hp;
+                                    let maxHpElem, currentHpElem, hpBarElem;
+                                    
+                                    if (char1Name.textContent === characterName) {
+                                        maxHpElem = char1MaxHp;
+                                        currentHpElem = char1CurrentHp;
+                                        hpBarElem = char1HpBar;
+                                    } else if (char2Name.textContent === characterName) {
+                                        maxHpElem = char2MaxHp;
+                                        currentHpElem = char2CurrentHp;
+                                        hpBarElem = char2HpBar;
+                                    } else if (char3Name.textContent === characterName) {
+                                        maxHpElem = char3MaxHp;
+                                        currentHpElem = char3CurrentHp;
+                                        hpBarElem = char3HpBar;
+                                    } else if (char4Name.textContent === characterName) {
+                                        maxHpElem = char4MaxHp;
+                                        currentHpElem = char4CurrentHp;
+                                        hpBarElem = char4HpBar;
+                                    }
+
+                                    if (maxHpElem && currentHpElem && hpBarElem) {
+                                        const maxHp = parseInt(maxHpElem.textContent);
+                                        currentHpElem.textContent = currentHp;
+                                        const percentage = (currentHp / maxHp) * 100;
+                                        hpBarElem.style.width = `${percentage}%`;
+                                        if (percentage < 25) {
+                                            hpBarElem.style.backgroundColor = 'red';
+                                        } else if (percentage < 50) {
+                                            hpBarElem.style.backgroundColor = 'orange';
+                                        } else {
+                                            hpBarElem.style.backgroundColor = 'green';
+                                        }
+                                    }
+                                } else if (step.event === "defeated") {
+                                    const defeatedCharName = step.character;
+                                    let defeatedImage;
+                                    if (char1Name.textContent === defeatedCharName) defeatedImage = char1Image;
+                                    else if (char2Name.textContent === defeatedCharName) defeatedImage = char2Image;
+                                    else if (char3Name.textContent === defeatedCharName) defeatedImage = char3Image;
+                                    else if (char4Name.textContent === defeatedCharName) defeatedImage = char4Image;
+
+                                    if (defeatedImage) {
+                                        defeatedImage.style.filter = 'grayscale(100%)';
+                                    }
+                                }
+                            }, delay);
+                            delay += baseDelay;
+                        });
+
+                        setTimeout(() => {
+                            // Redirect to battle_result.html after animation
+                            window.location.href = `/battle_result?result=${encodeURIComponent(data.result)}&steps=${encodeURIComponent(JSON.stringify(data.steps))}`;
+                        }, delay);
+                    })
+                    .catch(error => {
+                        console.error('Error during battle simulation:', error);
+                        alert('战斗模拟失败，请检查控制台。');
+                        startBattleBtn.style.display = 'inline-block';
+                        resetBattleBtn.style.display = 'none';
+                    });
+            });
+
+            resetBattleBtn.addEventListener('click', resetBattleDisplay);
+
+            // Initial display setup based on default mode
+            battleModeSelect.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>

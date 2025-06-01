@@ -1,0 +1,645 @@
+:root {
+    --primary: #4361ee;
+    --secondary: #3f37c9;
+    --success: #4cc9f0;
+    --danger: #f72585;
+    --light: #f8f9fa;
+    --dark: #212529;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f5f7fb;
+    color: #333;
+    line-height: 1.6;
+    overflow-x: hidden; /* 防止水平滚动 */
+}
+
+.character-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 30px;
+}
+
+.character-card {
+    border: 1px solid #e1e5eb;
+    padding: 20px;
+    border-radius: 12px;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.character-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+}
+
+.win-rate {
+    font-size: 0.95em;
+    color: #666;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    padding: 8px 12px;
+    background-color: #e6f7ff; /* Light blue background */
+    border-left: 4px solid var(--primary);
+    border-radius: 4px;
+    display: inline-block; /* To make padding and border work as expected */
+}
+
+input[type="text"], input[type="number"] {
+    display: block;
+    margin: 5px 0 15px;
+    padding: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+button {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+button.delete-btn {
+  background: linear-gradient(135deg, var(--danger), #e63946);
+}
+
+/* 按钮视觉优先级 */
+button.edit-btn {
+  background: linear-gradient(135deg, var(--success), #00c9a7);
+}
+
+button.delete-btn:hover {
+    background: linear-gradient(135deg, #e02d6f, #b00000);
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.actions button {
+    flex: 1;
+}
+
+.element-stats, .skill-damage, .attribute-resistance {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.element-stats label, .skill-damage label, .attribute-resistance label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.element-stats input, .skill-damage input, .attribute-resistance input {
+    width: 60px; /* 调整输入框宽度 */
+    margin: 0;
+}
+
+.skills ul, .attributes ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skills li, .attributes li {
+    background-color: #e9e9e9;
+    padding: 8px;
+    border-radius: 3px;
+    margin-bottom: 5px;
+    font-size: 0.9em;
+}
+
+.skills, .attributes {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.skills h3, .attributes h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.1em;
+    color: var(--primary);
+    font-weight: 600;
+    border-bottom: 2px solid #eaeaea;
+    padding-bottom: 6px;
+}
+
+.skill-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .character-list {
+        grid-template-columns: repeat(auto-fill, minmax(100%, 1fr));
+        gap: 15px;
+    }
+    
+    .character-card {
+        padding: 15px;
+    }
+    
+    body {
+        padding: 15px;
+    }
+
+    /* 表单部分 */
+    .form-section {
+        padding: 15px;
+    }
+
+    .form-group label {
+        margin-bottom: 8px;
+    }
+
+    input[type="text"], input[type="number"], button {
+        width: 100%;
+        margin-bottom: 10px; /* 增加按钮和输入框之间的间距 */
+    }
+
+    .element-stats, .skill-damage, .attribute-resistance {
+        flex-direction: column; /* 元素统计、技能伤害、特性抗性在小屏幕上垂直堆叠 */
+        gap: 5px;
+    }
+
+    .element-stats label, .skill-damage label, .attribute-resistance label {
+        width: 100%; /* 确保标签占据整行 */
+        justify-content: space-between; /* 标签和输入框左右对齐 */
+    }
+
+    .element-stats input, .skill-damage input, .attribute-resistance input {
+        width: 80px; /* 调整输入框宽度，使其在移动端更易用 */
+        text-align: right;
+    }
+
+    /* 确保在小屏幕上，战斗显示区域的图片和HP条也能良好显示 */
+    .battle-character-image {
+        max-width: 100px; /* 调整图片大小 */
+    }
+
+    .hp-bar-container {
+        width: 95%; /* 调整HP条容器宽度 */
+    }
+
+    .skill-row, .attribute-row {
+        flex-direction: column; /* 技能行和特性行在小屏幕上垂直堆叠 */
+        gap: 15px;
+    }
+
+    .actions button {
+        width: 100%; /* 确保操作按钮占据整行 */
+    }
+}
+
+.character-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    transition: transform 0.3s; /* 图片悬停缩放 */
+}
+.character-image:hover {
+  transform: scale(1.05);
+}
+
+h1 {
+    font-size: 2.2rem;
+    color: var(--secondary);
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+/* 提升标题对比度 */
+h2 {
+  color: var(--dark);
+  position: relative;
+  padding-bottom: 8px;
+}
+h2::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 3px;
+  background: linear-gradient(90deg, var(--primary), transparent);
+}
+
+h2 {
+    font-size: 1.5rem;
+    margin: 10px 0;
+    color: var(--dark);
+}
+
+p, li {
+    font-size: 1rem;
+    color: #444;
+}
+
+.skill-row input {
+    flex: 1;
+}
+
+.skills {
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+.skills h3 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1em;
+    color: #555;
+}
+
+.skills ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.skills li, .attributes li {
+  background: linear-gradient(135deg, #f8f9ff, #eef2ff);
+  border-left: 3px solid var(--primary);
+  padding: 12px;
+  border-radius: 0 8px 8px 0;
+}
+/* 编辑页面特定样式 */
+.form-section {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-actions {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.save-btn {
+    padding: 12px 30px;
+    font-size: 1.1rem;
+}
+
+.add-btn {
+    background: linear-gradient(135deg, var(--success), #00a8cc);
+    margin-top: 10px;
+}
+
+.add-btn:hover {
+    background: linear-gradient(135deg, #3db9d3, #0088a3);
+}
+
+input[type="text"], input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    transition: border-color 0.3s;
+}
+
+input[type="text"]:focus, input[type="number"]:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
+}
+
+/* 为生命值条添加过渡效果 */
+.hp-bar {
+    transition: width 0.8s ease-out, background-color 0.8s ease-out;
+}
+
+label {
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.skill-row, .attribute-row {
+    background-color: #f8faff;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border-left: 3px solid var(--success);
+}
+
+/* 战斗竞技场样式 */
+.battle-arena {
+    background-color: #f0f4ff;
+    border: 1px solid #cce0ff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.battle-arena h2 {
+    color: var(--secondary);
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.battle-controls {
+    margin-bottom: 20px;
+}
+
+.battle-controls button {
+    margin: 0 10px;
+}
+
+.battle-display {
+    display: flex;
+    justify-content: center; /* Centered for overall battle display */
+    align-items: flex-start; /* Align items to the top */
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 40px; /* 增加队伍之间的间距 */
+}
+
+.team-display {
+    display: flex;
+    flex-direction: column; /* Stack characters vertically within a team */
+    align-items: center;
+    gap: 15px; /* Space between characters in a team */
+    background-color: #f0f4ff;
+    border: 1px solid #cce0ff;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+    flex: 1; /* 让队伍占据可用空间 */
+    max-width: 45%; /* 限制最大宽度，确保两个队伍能并排 */
+    min-width: 280px; /* 调整最小宽度，防止过小 */
+}
+
+.team-name {
+    color: var(--secondary);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.6rem;
+}
+
+.character-display {
+    background-color: white;
+    border: 1px solid #e1e5eb;
+    border-radius: 10px;
+    padding: 15px;
+    width: 100%; /* 内部角色卡片宽度自适应父容器 */
+    max-width: 250px; /* 限制最大宽度 */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    position: relative; /* 为绝对定位的子元素提供定位上下文 */
+    overflow: hidden; /* 确保子元素不会溢出 */
+}
+
+.character-display h3 {
+    color: var(--primary);
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 1.4rem;
+}
+
+.battle-character-image {
+    max-width: 150px;
+    height: auto;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.hp-bar-container {
+    width: 90%;
+    height: 20px;
+    background-color: #e0e0e0;
+    border-radius: 10px;
+    margin: 10px auto;
+    overflow: hidden;
+    border: 1px solid #ccc;
+}
+
+.hp-bar {
+    height: 100%;
+    width: 100%; /* Initial width */
+    background-color: green;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out, background-color 0.5s ease-in-out;
+}
+
+.vs-text {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: var(--danger);
+    margin: 0 20px;
+}
+
+.battle-log {
+    background-color: #212529;
+    color: #f8f9fa;
+    border-radius: 8px;
+    padding: 20px;
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
+    text-align: left;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.9em;
+    line-height: 1.5;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.battle-log h3 {
+    color: var(--success);
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+.battle-log p {
+    margin-bottom: 5px;
+    color: #f8f9fa;
+}
+
+.battle-log p:last-child {
+    margin-bottom: 0;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .battle-display {
+        flex-direction: column; /* 在小屏幕上垂直堆叠 */
+        align-items: center; /* 居中对齐 */
+        gap: 20px; /* 增加垂直间距 */
+        overflow-x: hidden; /* 移除横向滚动 */
+        padding-bottom: 0;
+    }
+
+    .team-display {
+        max-width: 90%; /* 调整最大宽度 */
+        min-width: unset; /* 移除最小宽度限制 */
+    }
+}
+
+/* 动画 */
+@keyframes attack-animation {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes damage-animation {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes skill-animation {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.8; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes skill-text-fade-out {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+.skill-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    font-weight: bold;
+    color: yellow;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    animation: skill-text-fade-out 2s forwards;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.hp-badge {
+    background-color: #28a745; /* Green for HP */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.element-tag {
+    background-color: #007bff; /* Blue for elements */
+    color: white;
+    padding: 4px 8px;
+    border-radius: 5px;
+    font-size: 0.85em;
+    font-weight: bold;
+}
+
+/* Specific element colors (example) */
+.element-金 { background-color: #FFD700; } /* Gold */
+.element-木 { background-color: #228B22; } /* ForestGreen */
+.element-水 { background-color: #1E90FF; } /* DodgerBlue */
+.element-火 { background-color: #FF4500; } /* OrangeRed */
+.element-土 { background-color: #8B4513; } /* SaddleBrown */
+.element-风 { background-color: #87CEEB; } /* SkyBlue */
+.element-雷 { background-color: #8A2BE2; } /* BlueViolet */
+.element-毒 { background-color: #800080; } /* Purple */
+.element-法 { background-color: #4682B4; } /* SteelBlue */
+.element-圣 { background-color: #FFD700; } /* Gold */
+.element-精神 { background-color: #FF69B4; } /* HotPink */
+
+.character-meta {
+    margin-bottom: 10px;
+}
+
+.skill-desc {
+    font-style: italic;
+    color: #555;
+    margin-top: 5px;
+}
+
+.battle-result-container {
+    background-color: #f0f4ff;
+    border: 1px solid #cce0ff;
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.battle-result-container h2 {
+    color: var(--secondary);
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+}
+
+.battle-result-container p {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary);
+}
+
+.character-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.character-stats-table th, .character-stats-table td {
+    border: 1px solid #ddd;
+    padding: 10px;
+    text-align: left;
+}
+
+.character-stats-table th {
+    background-color: var(--primary);
+    color: white;
+}
+
+.character-stats-table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+.character-stats-table tr:hover {
+    background-color: #e9e9e9;
+}
+
+.back-button {
+    margin-top: 30px;
+    padding: 12px 25px;
+    font-size: 1.1rem;
+}

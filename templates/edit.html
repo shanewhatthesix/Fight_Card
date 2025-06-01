@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>编辑角色</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <h1>编辑角色: {{ character.name }}</h1>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label>名称:
+                <input type="text" name="name" value="{{ character.name }}">
+            </label>
+        </div>
+        
+        <div class="form-section">
+            <h2>属性</h2>
+            <div class="form-group">
+                <label>HP:
+                    <input type="number" name="hp" value="{{ character.stats.hp }}">
+                </label>
+            </div>
+            <h3>攻击力 (按元素):</h3>
+            <div class="element-stats">
+                {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
+                <label>{{ element }}:
+                    <input type="number" name="atk_{{ element }}" value="{{ character.stats.atk.get(element, 0) }}">
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="form-section">
+            <h2>技能</h2>
+            <div id="skills-container">
+                {% for skill in character.skills %}
+                <div class="skill-row">
+                    <input type="text" name="skill_name_{{ loop.index0 }}" placeholder="技能名称" value="{{ skill.name }}">
+                    <input type="text" name="skill_effect_{{ loop.index0 }}" placeholder="技能效果" value="{{ skill.effect }}">
+                    <div class="skill-damage">
+                        {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
+                        <label>{{ element }}:
+                            <input type="number" name="skill_damage_{{ loop.index0 }}_{{ element }}" value="{{ skill.damage.get(element, 0) }}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addSkillField()" class="add-btn">添加技能</button>
+        </div>
+        
+        <div class="form-section">
+            <h2>特性</h2>
+            <div id="attributes-container">
+                {% for attr in character.attributes %}
+                <div class="attribute-row">
+                    <input type="text" name="attribute_name_{{ loop.index0 }}" placeholder="特性名称" value="{{ attr.name }}">
+                    <div class="attribute-resistance">
+                        {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
+                        <label>{{ element }}:
+                            <input type="number" name="attr_resistance_{{ loop.index0 }}_{{ element }}" value="{{ attr.resistance.get(element, 0) }}">
+                        </label>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" onclick="addAttributeField()" class="add-btn">添加特性</button>
+        </div>
+        
+        <div class="form-group">
+            <label>元素:
+                <input type="text" name="element" value="{{ character.element if character.element is defined else '' }}">
+            </label>
+        </div>
+
+        <div class="form-group">
+            <label for="image">角色图片:</label>
+            <input type="file" name="image" id="image" accept="image/*">
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="save-btn">保存</button>
+        </div>
+    </form>
+    
+    <script>
+        function addSkillField() {
+            const container = document.getElementById('skills-container');
+            const div = document.createElement('div');
+            div.className = 'skill-row';
+            
+            const newIndex = container.children.length;
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.name = `skill_name_${newIndex}`;
+            nameInput.placeholder = '技能名称';
+            
+            const effectInput = document.createElement('input');
+            effectInput.type = 'text';
+            effectInput.name = `skill_effect_${newIndex}`;
+            effectInput.placeholder = '技能效果';
+            
+            const damageDiv = document.createElement('div');
+            damageDiv.className = 'skill-damage';
+            const elements = ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'];
+            elements.forEach(element => {
+                const label = document.createElement('label');
+                label.textContent = element + ': ';
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = `skill_damage_${newIndex}_${element}`;
+                input.value = 0;
+                label.appendChild(input);
+                damageDiv.appendChild(label);
+            });
+
+            div.appendChild(nameInput);
+            div.appendChild(effectInput);
+            div.appendChild(damageDiv);
+            container.appendChild(div);
+        }
+        
+        function addAttributeField() {
+            const container = document.getElementById('attributes-container');
+            const div = document.createElement('div');
+            div.className = 'attribute-row';
+
+            const newIndex = container.children.length;
+
+            const nameInput = document.createElement('input');
+            nameInput.type = 'text';
+            nameInput.name = `attribute_name_${newIndex}`;
+            nameInput.placeholder = '特性名称';
+
+            const resistanceDiv = document.createElement('div');
+            resistanceDiv.className = 'attribute-resistance';
+            const elements = ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'];
+            elements.forEach(element => {
+                const label = document.createElement('label');
+                label.textContent = element + ': ';
+                const input = document.createElement('input');
+                input.type = 'number';
+                input.name = `attr_resistance_${newIndex}_${element}`;
+                input.value = 0;
+                label.appendChild(input);
+                resistanceDiv.appendChild(label);
+            });
+
+            div.appendChild(nameInput);
+            div.appendChild(resistanceDiv);
+            container.appendChild(div);
+        }
+    </script>
+</body>
+</html>
