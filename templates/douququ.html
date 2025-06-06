@@ -7,52 +7,69 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container">
+    <nav class="main-nav">
+        <a href="/" class="nav-item">
+            🏠 返回主页
+        </a>
+    </nav>
+    <div class="container battle-page-container">
         <h1>斗蛐蛐竞技场</h1>
-:start_line:11
--------
         <div class="battle-controls">
-            <div class="battle-mode-selection">
+            <div class="battle-mode-selection form-group">
                 <label for="battle-mode">选择模式:</label>
-                <select id="battle-mode">
+                <select id="battle-mode" class="form-input">
                     <option value="1v1">1V1 模式</option>
                     <option value="2v2">2V2 模式</option>
                 </select>
             </div>
 
             <div class="character-selection 1v1-mode" id="one-v-one-mode-selection">
-                <label for="char1-select">角色 1:</label>
-                <select id="char1-select"></select>
-                <label for="char2-select">角色 2:</label>
-                <select id="char2-select"></select>
+                <div class="form-group">
+                    <label for="char1-select">角色 1:</label>
+                    <select id="char1-select" class="form-input"></select>
+                </div>
+                <div class="form-group">
+                    <label for="char2-select">角色 2:</label>
+                    <select id="char2-select" class="form-input"></select>
+                </div>
             </div>
 
             <div class="character-selection 2v2-mode" id="two-v-two-mode-selection" style="display: none;">
                 <div class="team-selection">
                     <h3>队伍 1</h3>
-                    <label for="team1-char1-select">角色 1:</label>
-                    <select id="team1-char1-select"></select>
-                    <label for="team1-char2-select">角色 2:</label>
-                    <select id="team1-char2-select"></select>
+                    <div class="form-group">
+                        <label for="team1-char1-select">角色 1:</label>
+                        <select id="team1-char1-select" class="form-input"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="team1-char2-select">角色 2:</label>
+                        <select id="team1-char2-select" class="form-input"></select>
+                    </div>
                 </div>
                 <div class="team-selection">
                     <h3>队伍 2</h3>
-                    <label for="team2-char1-select">角色 1:</label>
-                    <select id="team2-char1-select"></select>
-                    <label for="team2-char2-select">角色 2:</label>
-                    <select id="team2-char2-select"></select>
+                    <div class="form-group">
+                        <label for="team2-char1-select">角色 1:</label>
+                        <select id="team2-char1-select" class="form-input"></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="team2-char2-select">角色 2:</label>
+                        <select id="team2-char2-select" class="form-input"></select>
+                    </div>
                 </div>
             </div>
 
-            <button id="start-battle-btn">开始战斗</button>
-            <button id="reset-battle-btn" style="display: none;">重置</button>
-            <label for="battle-speed">战斗速度:</label>
-            <select id="battle-speed">
-                <option value="1000">慢速</option>
-                <option value="500" selected>正常</option>
-                <option value="200">快速</option>
-                <option value="50">极速</option>
-            </select>
+            <button id="start-battle-btn" class="btn-primary">开始战斗</button>
+            <button id="reset-battle-btn" class="btn-secondary" style="display: none;">重置</button>
+            <div class="form-group">
+                <label for="battle-speed">战斗速度:</label>
+                <select id="battle-speed" class="form-input">
+                    <option value="1000">慢速</option>
+                    <option value="500" selected>正常</option>
+                    <option value="200">快速</option>
+                    <option value="50">极速</option>
+                </select>
+            </div>
         </div>
         
         <div class="battle-display">
@@ -60,47 +77,76 @@
                 <h2 class="team-name">队伍 1</h2>
                 <div id="character1-display" class="character-display">
                     <h3 id="char1-name"></h3>
-                    <img id="char1-image" src="" alt="角色1" class="battle-character-image">
+                    <div class="character-image-wrapper battle-character-image-wrapper">
+                        <img id="char1-image" src="" alt="角色1" class="character-image battle-character-image">
+                    </div>
                     <div class="hp-bar-container">
-                        <div id="char1-hp-bar" class="hp-bar"></div>
+                        <div id="char1-hp-bar" class="hp-bar">
+                            <div id="char1-hp-fill" class="hp-fill"></div>
+                        </div>
                     </div>
                     <p>HP: <span id="char1-current-hp"></span> / <span id="char1-max-hp"></span></p>
                 </div>
                 <div id="character3-display" class="character-display" style="display: none;">
                     <h3 id="char3-name"></h3>
-                    <img id="char3-image" src="" alt="角色3" class="battle-character-image">
+                    <div class="character-image-wrapper battle-character-image-wrapper">
+                        <img id="char3-image" src="" alt="角色3" class="character-image battle-character-image">
+                    </div>
                     <div class="hp-bar-container">
-                        <div id="char3-hp-bar" class="hp-bar"></div>
+                        <div id="char3-hp-bar" class="hp-bar">
+                            <div id="char3-hp-fill" class="hp-fill"></div>
+                        </div>
                     </div>
                     <p>HP: <span id="char3-current-hp"></span> / <span id="char3-max-hp"></span></p>
                 </div>
             </div>
             
-            <div class="vs-text">VS</div>
+            <div class="vs-display">
+                <span class="vs-text">VS</span>
+                <div id="battle-action-display" class="battle-action-display">
+                    <!-- 招式名称和效果将由JavaScript动态加载 -->
+                </div>
+            </div>
             
             <div class="team-display" id="team2-display">
                 <h2 class="team-name">队伍 2</h2>
                 <div id="character2-display" class="character-display">
                     <h3 id="char2-name"></h3>
-                    <img id="char2-image" src="" alt="角色2" class="battle-character-image">
+                    <div class="character-image-wrapper battle-character-image-wrapper">
+                        <img id="char2-image" src="" alt="角色2" class="character-image battle-character-image">
+                    </div>
                     <div class="hp-bar-container">
-                        <div id="char2-hp-bar" class="hp-bar"></div>
+                        <div id="char2-hp-bar" class="hp-bar">
+                            <div id="char2-hp-fill" class="hp-fill"></div>
+                        </div>
                     </div>
                     <p>HP: <span id="char2-current-hp"></span> / <span id="char2-max-hp"></span></p>
                 </div>
                 <div id="character4-display" class="character-display" style="display: none;">
                     <h3 id="char4-name"></h3>
-                    <img id="char4-image" src="" alt="角色4" class="battle-character-image">
+                    <div class="character-image-wrapper battle-character-image-wrapper">
+                        <img id="char4-image" src="" alt="角色4" class="character-image battle-character-image">
+                    </div>
                     <div class="hp-bar-container">
-                        <div id="char4-hp-bar" class="hp-bar"></div>
+                        <div id="char4-hp-bar" class="hp-bar">
+                            <div id="char4-hp-fill" class="hp-fill"></div>
+                        </div>
                     </div>
                     <p>HP: <span id="char4-current-hp"></span> / <span id="char4-max-hp"></span></p>
                 </div>
             </div>
         </div>
 
-        <a href="/">返回主页</a>
+        <div class="battle-log-section" id="battle-log">
+            <h3>战斗日志</h3>
+            <!-- 战斗日志将由JavaScript动态加载 -->
+        </div>
     </div>
+
+    <footer class="main-footer">
+      © 2025 卡牌游戏角色管理器
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const battleModeSelect = document.getElementById('battle-mode');
@@ -113,18 +159,23 @@
             const char1Name = document.getElementById('char1-name');
             const char1Image = document.getElementById('char1-image');
             const char1HpBar = document.getElementById('char1-hp-bar');
+            const char1HpFill = document.getElementById('char1-hp-fill');
             const char1CurrentHp = document.getElementById('char1-current-hp');
             const char1MaxHp = document.getElementById('char1-max-hp');
+            const character1Display = document.getElementById('character1-display');
 
             const char2Name = document.getElementById('char2-name');
             const char2Image = document.getElementById('char2-image');
             const char2HpBar = document.getElementById('char2-hp-bar');
+            const char2HpFill = document.getElementById('char2-hp-fill');
             const char2CurrentHp = document.getElementById('char2-current-hp');
             const char2MaxHp = document.getElementById('char2-max-hp');
+            const character2Display = document.getElementById('character2-display');
 
             const char3Name = document.getElementById('char3-name');
             const char3Image = document.getElementById('char3-image');
             const char3HpBar = document.getElementById('char3-hp-bar');
+            const char3HpFill = document.getElementById('char3-hp-fill');
             const char3CurrentHp = document.getElementById('char3-current-hp');
             const char3MaxHp = document.getElementById('char3-max-hp');
             const character3Display = document.getElementById('character3-display');
@@ -132,6 +183,7 @@
             const char4Name = document.getElementById('char4-name');
             const char4Image = document.getElementById('char4-image');
             const char4HpBar = document.getElementById('char4-hp-bar');
+            const char4HpFill = document.getElementById('char4-hp-fill');
             const char4CurrentHp = document.getElementById('char4-current-hp');
             const char4MaxHp = document.getElementById('char4-max-hp');
             const character4Display = document.getElementById('character4-display');
@@ -143,26 +195,30 @@
             const team2Char1Select = document.getElementById('team2-char1-select');
             const team2Char2Select = document.getElementById('team2-char2-select');
 
+            const battleLogDiv = document.getElementById('battle-log');
+
             let allCharacters = []; // Store all characters for later use
 
-            function resetCharacterDisplay(charNameElem, charImageElem, charHpBarElem, charCurrentHpElem, charMaxHpElem, charDisplayElem) {
+            function resetCharacterDisplay(charNameElem, charImageElem, charHpBarElem, charHpFillElem, charCurrentHpElem, charMaxHpElem, charDisplayElem) {
                 charNameElem.textContent = '';
                 charImageElem.src = '';
                 charImageElem.alt = '';
-                charHpBarElem.style.width = '100%';
-                charHpBarElem.style.backgroundColor = 'green';
+                charHpFillElem.style.width = '100%';
+                charHpFillElem.style.backgroundColor = 'var(--success)';
                 charCurrentHpElem.textContent = '0';
                 charMaxHpElem.textContent = '0';
                 if (charDisplayElem) {
-                    charDisplayElem.style.filter = 'none'; // Remove grayscale
+                    charDisplayElem.classList.remove('defeated-character'); // 移除阵亡状态类
                 }
             }
 
             function resetBattleDisplay() {
-                resetCharacterDisplay(char1Name, char1Image, char1HpBar, char1CurrentHp, char1MaxHp);
-                resetCharacterDisplay(char2Name, char2Image, char2HpBar, char2CurrentHp, char2MaxHp);
-                resetCharacterDisplay(char3Name, char3Image, char3HpBar, char3CurrentHp, char3MaxHp, character3Display);
-                resetCharacterDisplay(char4Name, char4Image, char4HpBar, char4CurrentHp, char4MaxHp, character4Display);
+                resetCharacterDisplay(char1Name, char1Image, char1HpBar, char1HpFill, char1CurrentHp, char1MaxHp, character1Display);
+                resetCharacterDisplay(char2Name, char2Image, char2HpBar, char2HpFill, char2CurrentHp, char2MaxHp, character2Display);
+                resetCharacterDisplay(char3Name, char3Image, char3HpBar, char3HpFill, char3CurrentHp, char3MaxHp, character3Display);
+                resetCharacterDisplay(char4Name, char4Image, char4HpBar, char4HpFill, char4CurrentHp, char4MaxHp, character4Display);
+
+                battleLogDiv.innerHTML = '<h3>战斗日志</h3>'; // 清空战斗日志
 
                 startBattleBtn.style.display = 'inline-block';
                 resetBattleBtn.style.display = 'none';
@@ -303,6 +359,12 @@
                         let delay = 0;
                         data.steps.forEach(step => {
                             setTimeout(() => {
+                                const logEntry = document.createElement('p');
+                                logEntry.className = `log-entry event-${step.event}`;
+                                logEntry.textContent = step.message;
+                                battleLogDiv.appendChild(logEntry);
+                                battleLogDiv.scrollTop = battleLogDiv.scrollHeight; // Scroll to bottom
+
                                 if (step.event === "start") {
                                     // Initialize character displays based on the battle mode
                                     // 根据战斗模式从 allCharacters 中找到对应的角色数据进行初始化
@@ -325,17 +387,23 @@
                                             char1Image.alt = selectedChar1.name;
                                             char1MaxHp.textContent = selectedChar1.stats.hp;
                                             char1CurrentHp.textContent = selectedChar1.stats.hp;
-                                            char1HpBar.style.width = '100%';
-                                            char1HpBar.style.backgroundColor = 'green';
+                                            // char1HpFill.style.width = '100%'; // 移除冗余设置
+                                            // char1HpFill.style.backgroundColor = 'var(--success)'; // 移除冗余设置
                                         }
+                                        // 确保在初始化时也调用 updateHpDisplay 来设置正确的颜色
+                                        if (selectedChar1) {
+                                            updateHpDisplay(selectedChar1.name, selectedChar1.stats.hp, selectedChar1.stats.hp);
+                                        }
+
                                         if (selectedChar2) {
                                             char2Name.textContent = selectedChar2.name;
                                             char2Image.src = selectedChar2.image ? `/assets/${selectedChar2.image}` : '';
                                             char2Image.alt = selectedChar2.name;
                                             char2MaxHp.textContent = selectedChar2.stats.hp;
                                             char2CurrentHp.textContent = selectedChar2.stats.hp;
-                                            char2HpBar.style.width = '100%';
-                                            char2HpBar.style.backgroundColor = 'green';
+                                            // char2HpFill.style.width = '100%'; // 移除冗余设置
+                                            // char2HpFill.style.backgroundColor = 'var(--success)'; // 初始设置为绿色 // 移除冗余设置
+                                            updateHpDisplay(selectedChar2.name, selectedChar2.stats.hp, selectedChar2.stats.hp);
                                         }
                                     } else { // 2v2 mode
                                         // 队伍1的第一个角色
@@ -345,8 +413,9 @@
                                             char1Image.alt = selectedChar1.name;
                                             char1MaxHp.textContent = selectedChar1.stats.hp;
                                             char1CurrentHp.textContent = selectedChar1.stats.hp;
-                                            char1HpBar.style.width = '100%';
-                                            char1HpBar.style.backgroundColor = 'green';
+                                            char1HpFill.style.width = '100%';
+                                            char1HpFill.style.backgroundColor = 'var(--success)'; // 初始设置为绿色
+                                            updateHpDisplay(selectedChar1.name, selectedChar1.stats.hp);
                                         }
                                         // 队伍1的第二个角色
                                         if (selectedChar3) {
@@ -356,8 +425,9 @@
                                             char3Image.alt = selectedChar3.name;
                                             char3MaxHp.textContent = selectedChar3.stats.hp;
                                             char3CurrentHp.textContent = selectedChar3.stats.hp;
-                                            char3HpBar.style.width = '100%';
-                                            char3HpBar.style.backgroundColor = 'green';
+                                            // char3HpFill.style.width = '100%'; // 移除冗余设置
+                                            // char3HpFill.style.backgroundColor = 'var(--success)'; // 初始设置为绿色 // 移除冗余设置
+                                            updateHpDisplay(selectedChar3.name, selectedChar3.stats.hp, selectedChar3.stats.hp);
                                         }
                                         // 队伍2的第一个角色
                                         if (selectedChar2) {
@@ -366,8 +436,9 @@
                                             char2Image.alt = selectedChar2.name;
                                             char2MaxHp.textContent = selectedChar2.stats.hp;
                                             char2CurrentHp.textContent = selectedChar2.stats.hp;
-                                            char2HpBar.style.width = '100%';
-                                            char2HpBar.style.backgroundColor = 'green';
+                                            char2HpFill.style.width = '100%';
+                                            char2HpFill.style.backgroundColor = 'var(--success)'; // 初始设置为绿色
+                                            updateHpDisplay(selectedChar2.name, selectedChar2.stats.hp);
                                         }
                                         // 队伍2的第二个角色
                                         if (selectedChar4) {
@@ -377,107 +448,78 @@
                                             char4Image.alt = selectedChar4.name;
                                             char4MaxHp.textContent = selectedChar4.stats.hp;
                                             char4CurrentHp.textContent = selectedChar4.stats.hp;
-                                            char4HpBar.style.width = '100%';
-                                            char4HpBar.style.backgroundColor = 'green';
+                                            // char4HpFill.style.width = '100%'; // 移除冗余设置
+                                            // char4HpFill.style.backgroundColor = 'var(--success)'; // 初始设置为绿色 // 移除冗余设置
+                                            updateHpDisplay(selectedChar4.name, selectedChar4.stats.hp, selectedChar4.stats.hp);
                                         }
                                     }
                                 } else if (step.event === "character_turn") {
-                                    let characterImage;
-                                    if (step.character === char1Name.textContent) characterImage = char1Image;
-                                    else if (step.character === char2Name.textContent) characterImage = char2Image;
-                                    else if (step.character === char3Name.textContent) characterImage = char3Image;
-                                    else if (step.character === char4Name.textContent) characterImage = char4Image;
+                                    let characterDisplay;
+                                    if (step.character === char1Name.textContent) characterDisplay = character1Display;
+                                    else if (step.character === char2Name.textContent) characterDisplay = character2Display;
+                                    else if (step.character === char3Name.textContent) characterDisplay = character3Display;
+                                    else if (step.character === char4Name.textContent) characterDisplay = character4Display;
                                     
-                                    if (characterImage) {
-                                        characterImage.classList.add('character-attacking');
+                                    if (characterDisplay) {
+                                        characterDisplay.classList.add('attack-animation');
                                         setTimeout(() => {
-                                            characterImage.classList.remove('character-attacking');
+                                            characterDisplay.classList.remove('attack-animation');
                                         }, 500); // Match attack-animation duration
                                     }
-                                } else if (step.event === "use_skill") {
-                                    let defenderDisplay;
-                                    if (step.defender === char1Name.textContent) defenderDisplay = document.getElementById('character1-display');
-                                    else if (step.defender === char2Name.textContent) defenderDisplay = document.getElementById('character2-display');
-                                    else if (step.defender === char3Name.textContent) defenderDisplay = document.getElementById('character3-display');
-                                    else if (step.defender === char4Name.textContent) defenderDisplay = document.getElementById('character4-display');
-                                    
-                                    if (defenderDisplay) {
-                                        const skillTextDiv = document.createElement('div');
-                                        skillTextDiv.classList.add('skill-text-display');
-                                        skillTextDiv.textContent = `「${step.character}」使用了「${step.skill}」！`; /* 只显示攻击者和技能 */
-                                        defenderDisplay.appendChild(skillTextDiv);
+                                  } else if (step.event === "use_skill") {
+                                      const battleActionDisplay = document.getElementById('battle-action-display');
+                                      battleActionDisplay.innerHTML = ''; // 清空之前的显示
+  
+                                      const skillNameText = document.createElement('div');
+                                      skillNameText.classList.add('skill-name-text');
+                                      skillNameText.textContent = `「${step.skill}」！`;
+                                      battleActionDisplay.appendChild(skillNameText);
+  
+                                      if (step.effect) {
+                                          const skillEffectText = document.createElement('div');
+                                          skillEffectText.classList.add('skill-effect-text');
+                                          skillEffectText.textContent = step.effect;
+                                          battleActionDisplay.appendChild(skillEffectText);
+                                      }
+  
+                                      // 播放音效
+                                      if (step.audio) {
+                                          const audio = new Audio(`/static/audio/${step.audio}`);
+                                          audio.play().catch(e => console.error("Error playing audio:", e));
+                                      }
+  
+                                      setTimeout(() => {
+                                          battleActionDisplay.innerHTML = '';
+                                      }, 1500); // 动画持续时间
+  
+                                  } else if (step.event === "deal_damage") {
+                                    const battleActionDisplay = document.getElementById('battle-action-display');
+                                    battleActionDisplay.innerHTML = ''; // 清空之前的显示
 
-                                        const skillEffectDiv = document.createElement('div');
-                                        skillEffectDiv.classList.add('skill-effect');
-                                        defenderDisplay.appendChild(skillEffectDiv);
+                                    const damageNumberText = document.createElement('div');
+                                    damageNumberText.classList.add('damage-number-text');
+                                    damageNumberText.textContent = `-${step.damage_dealt}`;
+                                    battleActionDisplay.appendChild(damageNumberText);
 
-                                        setTimeout(() => {
-                                            skillTextDiv.remove();
-                                            skillEffectDiv.remove(); /* 保持移除，如果不需要可以考虑删除此行 */
-                                        }, 6000); // 延长留存时间到3秒
-                                    }
-                                } else if (step.event === "deal_damage") {
-                                    let defenderDisplay;
-                                    if (step.defender === char1Name.textContent) defenderDisplay = document.getElementById('character1-display');
-                                    else if (step.defender === char2Name.textContent) defenderDisplay = document.getElementById('character2-display');
-                                    else if (step.defender === char3Name.textContent) defenderDisplay = document.getElementById('character3-display');
-                                    else if (step.defender === char4Name.textContent) defenderDisplay = document.getElementById('character4-display');
-                                    
-                                    if (defenderDisplay) {
-                                        const damageNumberDiv = document.createElement('div');
-                                        damageNumberDiv.classList.add('damage-number');
-                                        damageNumberDiv.textContent = `-${step.damage_dealt}`;
-                                        defenderDisplay.appendChild(damageNumberDiv);
-                                        setTimeout(() => {
-                                            damageNumberDiv.remove();
-                                        }, 1000); // Match damage-animation duration (1s)
-                                    }
+                                    setTimeout(() => {
+                                        battleActionDisplay.innerHTML = '';
+                                    }, 1500); // 动画持续时间
                                 } else if (step.event === "hp_update") {
-                                    const characterName = step.character;
-                                    const currentHp = step.hp;
-                                    let maxHpElem, currentHpElem, hpBarElem;
-                                    
-                                    if (char1Name.textContent === characterName) {
-                                        maxHpElem = char1MaxHp;
-                                        currentHpElem = char1CurrentHp;
-                                        hpBarElem = char1HpBar;
-                                    } else if (char2Name.textContent === characterName) {
-                                        maxHpElem = char2MaxHp;
-                                        currentHpElem = char2CurrentHp;
-                                        hpBarElem = char2HpBar;
-                                    } else if (char3Name.textContent === characterName) {
-                                        maxHpElem = char3MaxHp;
-                                        currentHpElem = char3CurrentHp;
-                                        hpBarElem = char3HpBar;
-                                    } else if (char4Name.textContent === characterName) {
-                                        maxHpElem = char4MaxHp;
-                                        currentHpElem = char4CurrentHp;
-                                        hpBarElem = char4HpBar;
-                                    }
-
-                                    if (maxHpElem && currentHpElem && hpBarElem) {
-                                        const maxHp = parseInt(maxHpElem.textContent);
-                                        currentHpElem.textContent = currentHp;
-                                        const percentage = (currentHp / maxHp) * 100;
-                                        hpBarElem.style.width = `${percentage}%`;
-                                        if (percentage < 25) {
-                                            hpBarElem.style.backgroundColor = 'red';
-                                        } else if (percentage < 50) {
-                                            hpBarElem.style.backgroundColor = 'orange';
-                                        } else {
-                                            hpBarElem.style.backgroundColor = 'green';
-                                        }
+                                    // 需要获取当前角色的最大血量
+                                    const char = allCharacters.find(c => c.name === step.character);
+                                    if (char) {
+                                        updateHpDisplay(step.character, step.hp, char.stats.hp);
                                     }
                                 } else if (step.event === "defeated") {
                                     const defeatedCharName = step.character;
-                                    let defeatedImage;
-                                    if (char1Name.textContent === defeatedCharName) defeatedImage = char1Image;
-                                    else if (char2Name.textContent === defeatedCharName) defeatedImage = char2Image;
-                                    else if (char3Name.textContent === defeatedCharName) defeatedImage = char3Image;
-                                    else if (char4Name.textContent === defeatedCharName) defeatedImage = char4Image;
+                                    let defeatedDisplay;
+                                    if (char1Name.textContent === defeatedCharName) defeatedDisplay = character1Display;
+                                    else if (char2Name.textContent === defeatedCharName) defeatedDisplay = character2Display;
+                                    else if (char3Name.textContent === defeatedCharName) defeatedDisplay = character3Display;
+                                    else if (char4Name.textContent === defeatedCharName) defeatedDisplay = character4Display;
 
-                                    if (defeatedImage) {
-                                        defeatedImage.style.filter = 'grayscale(100%)';
+                                    if (defeatedDisplay) {
+                                        defeatedDisplay.classList.add('defeated-character');
                                     }
                                 }
                             }, delay);
@@ -499,8 +541,62 @@
 
             resetBattleBtn.addEventListener('click', resetBattleDisplay);
 
-            // Initial display setup based on default mode
-            battleModeSelect.dispatchEvent(new Event('change'));
+            // 涟漪效果JS (从index.html复制过来，确保所有页面都有)
+            document.querySelectorAll('button, .btn-primary, .btn-secondary, .btn-skill').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    const rect = btn.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    btn.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // 新增函数：更新血条显示
+            function updateHpDisplay(characterName, currentHp, maxHp) {
+                let maxHpElem, currentHpElem, hpFillElem;
+                
+                if (char1Name.textContent === characterName) {
+                    maxHpElem = char1MaxHp;
+                    currentHpElem = char1CurrentHp;
+                    hpFillElem = char1HpFill;
+                } else if (char2Name.textContent === characterName) {
+                    maxHpElem = char2MaxHp;
+                    currentHpElem = char2CurrentHp;
+                    hpFillElem = char2HpFill;
+                } else if (char3Name.textContent === characterName) {
+                    maxHpElem = char3MaxHp;
+                    currentHpElem = char3CurrentHp;
+                    hpFillElem = char3HpFill;
+                } else if (char4Name.textContent === characterName) {
+                    maxHpElem = char4MaxHp;
+                    currentHpElem = char4CurrentHp;
+                    hpFillElem = char4HpFill;
+                }
+
+                if (maxHpElem && currentHpElem && hpFillElem) {
+                    // const maxHp = parseInt(maxHpElem.textContent); // 移除此行，使用传入的maxHp参数
+                    currentHpElem.textContent = currentHp;
+                    const percentage = (currentHp / maxHp) * 100;
+                    hpFillElem.style.width = `${percentage}%`;
+                    if (percentage > 50) {
+                        hpFillElem.style.backgroundColor = 'var(--success)';
+                    } else if (percentage > 20) {
+                        hpFillElem.style.backgroundColor = 'var(--warning)';
+                    } else {
+                        hpFillElem.style.backgroundColor = 'var(--danger)';
+                    }
+                }
+            }
         });
     </script>
 </body>

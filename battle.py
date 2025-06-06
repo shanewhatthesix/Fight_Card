@@ -123,8 +123,11 @@ def simulate_battle(team1, team2, battle_mode='2v2'):
                 "defender": defender['name'],
                 "skill": skill['name'],
                 "effect": skill['effect'],
+                "audio": skill.get('audio', '').replace('assets/', 'audio/'),
                 "message": f"「{attacker['name']}」对「{defender['name']}」使用了「{skill['name']}」！"
             })
+            print(f"DEBUG: Skill audio (original): {skill.get('audio', '')}")
+            print(f"DEBUG: Skill audio (processed): {skill.get('audio', '').replace('assets/', 'audio/')}")
 
             # 初始化总伤害
             total_damage = 0
@@ -357,6 +360,7 @@ def simulate_battle_free_for_all(all_characters):
                 "defender": defender['name'],
                 "skill": skill['name'],
                 "effect": skill['effect'],
+                "audio": skill.get('audio', ''),
                 "message": f"「{attacker['name']}」对「{defender['name']}」使用了「{skill['name']}」！"
             })
 

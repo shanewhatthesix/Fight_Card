@@ -7,101 +7,196 @@
 </head>
 <body>
     <h1>游戏角色管理</h1>
-    <nav style="background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 15px 20px; border-radius: 8px; margin-bottom: 20px; display: flex; justify-content: center;">
-        <a href="/douququ" style="color: white; font-weight: bold; text-decoration: none; font-size: 1.1em;">
+    <nav class="main-nav">
+        <a href="/douququ" class="nav-item">
             🏆 进入斗蛐蛐模式
+        </a>
+        <a href="#" id="startPokemonBattle" class="nav-item">
+            ⚔️ 宝可梦式对战 (选择角色)
         </a>
     </nav>
 
+    <div id="selection-prompt" class="selection-prompt" style="display: none;">
+        请选择玩家1的角色...
+    </div>
 
     <form action="/create" method="POST">
-        <button type="submit">创建新角色</button>
+        <button type="submit" class="btn-create">创建新角色</button>
     </form>
     
     <div class="character-list">
         {% for char in characters %}
         <div class="character-card">
-            {% if char.image %}
-            <img src="{{ url_for('uploaded_file', filename=char.image) }}" alt="{{ char.name }}" class="character-image">
-            {% endif %}
-            <h2>{{ char.name }}</h2>
-            <div class="character-meta">
-              <span class="hp-badge">{{ char.stats.hp }} HP</span>
-:start_line:30
--------
-              <span class="element-tag element-{{ char.element }}">{{ char.element }}</span>
-            </div>
-            {% set char_win_rates = win_rates.get(char.id | string, {"total_battles": 0, "wins": 0}) %}
-            {% set total_battles = char_win_rates.total_battles %}
-            {% set wins = char_win_rates.wins %}
-            {% set win_percentage = (wins / total_battles * 100) if total_battles > 0 else 0 %}
-            <div class="win-rate">
-                胜率: {{ "%.2f" | format(win_percentage) }}% ({{ wins }}胜 / {{ total_battles }}总)
-            </div>
-            <h3>攻击力:</h3>
-            <ul>
-                {% for element, value in char.stats.atk.items() %}
-                {% if value > 0 %}
-                <li>{{ element }}: {{ value }}</li>
+            <div class="character-image-wrapper">
+                {% if char.image %}
+                <img src="{{ url_for('uploaded_file', filename=char.image) }}" alt="{{ char.name }}" class="character-image">
                 {% endif %}
-                {% endfor %}
-            </ul>
-            
-            {% if char.skills %}
-            <div class="skills">
-                <h3>技能:</h3>
-                <ul>
-                    {% for skill in char.skills %}
-                    <li>
-                        <strong>{{ skill.name }}:</strong>
-                        <div class="skill-desc">{{ skill.effect }}</div>
-                        {% if skill.damage %}
-                        (伤害:
-                        {% for element, value in skill.damage.items() %}
-                        {% if value > 0 %}
-                        {{ value }}{{ element }}
-                        {% endif %}
-                        {% endfor %})
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
             </div>
-            {% endif %}
-            
-            {% if char.attributes %}
-            <div class="attributes">
-                <h3>特性:</h3>
-                <ul>
-                    {% for attr in char.attributes %}
-                    <li>
-                        <strong>{{ attr.name }}:</strong> 
-                        {% if attr.resistance %}
-                        (抗性: 
-                        {% for element, value in attr.resistance.items() %}
-                        {% if value > 0 %}
-                        {{ value }}%{{ element }} 
-                        {% endif %}
-                        {% endfor %})
-                        {% endif %}
-                    </li>
-                    {% endfor %}
-                </ul>
+            <div class="character-info">
+                <h2>{{ char.name }}</h2>
+                <div class="character-meta">
+                  <span class="hp-badge">{{ char.stats.hp }} HP</span>
+                  <span class="element-tag element-{{ char.element }}">{{ char.element }}</span>
+                </div>
+                {% set char_win_rates = win_rates.get(char.id | string, {"total_battles": 0, "wins": 0}) %}
+                {% set total_battles = char_win_rates.total_battles %}
+                {% set wins = char_win_rates.wins %}
+                {% set win_percentage = (wins / total_battles * 100) if total_battles > 0 else 0 %}
+                <div class="win-rate">
+                    胜率: {{ "%.2f" | format(win_percentage) }}% ({{ wins }}胜 / {{ total_battles }}总)
+                </div>
+                
+                {% if char.skills %}
+                <div class="skills">
+                    <h3>技能:</h3>
+                    <ul class="skill-list">
+                        {% for skill in char.skills %}
+                        <li class="skill-item">
+                            <strong>{{ skill.name }}:</strong>
+                            <div class="skill-desc">{{ skill.effect }}</div>
+                            {% if skill.damage %}
+                            (伤害:
+                            {% for element, value in skill.damage.items() %}
+                            {% if value > 0 %}
+                            {{ value }}{{ element }}
+                            {% endif %}
+                            {% endfor %})
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+                
+                {% if char.attributes %}
+                <div class="attributes">
+                    <h3>特性:</h3>
+                    <ul class="attribute-list">
+                        {% for attr in char.attributes %}
+                        <li class="attribute-item">
+                            <strong>{{ attr.name }}:</strong>
+                            {% if attr.resistance %}
+                            (抗性:
+                            {% for element, value in attr.resistance.items() %}
+                            {% if value > 0 %}
+                            {{ value }}%{{ element }}
+                            {% endif %}
+                            {% endfor %})
+                            {% endif %}
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
-            
             <div class="actions">
-                <button onclick="location.href='/edit/{{ char.id }}'">编辑</button>
+                <button onclick="location.href='/edit/{{ char.id }}'" class="btn-edit">编辑</button>
                 <form action="/delete/{{ char.id }}" method="POST" style="display:inline;">
                     <button type="submit" class="delete-btn">删除</button>
                 </form>
+                <button class="select-for-pokemon-battle-btn btn-battle" data-char-id="{{ char.id }}" data-char-name="{{ char.name }}">选择对战</button>
             </div>
         </div>
         {% endfor %}
     </div>
-    </div>
-    <footer style="text-align: center; margin-top: 40px; padding: 20px; background-color: #f0f4ff; border-top: 1px solid #e1e5eb; border-radius: 8px; color: #777; font-size: 0.9em;">
+    <footer class="main-footer">
       © 2025 卡牌游戏角色管理器
     </footer>
+
+    <script>
+        // 涟漪效果JS
+        document.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                btn.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+
+        // 页面过渡JS
+        function navigate(path) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = path;
+            }, 300);
+        }
+
+        let player1SelectedCharId = null;
+        let player1SelectedCharName = null;
+        const selectionPrompt = document.getElementById('selection-prompt');
+        const pokemonBattleLink = document.getElementById('startPokemonBattle');
+        const selectButtons = document.querySelectorAll('.select-for-pokemon-battle-btn');
+
+        pokemonBattleLink.addEventListener('click', (event) => {
+            event.preventDefault(); // 阻止默认跳转
+            player1SelectedCharId = null; // 重置选择
+            player1SelectedCharName = null;
+            selectionPrompt.textContent = '请选择玩家1的角色...';
+            selectionPrompt.style.display = 'block';
+            
+            // 启用所有选择按钮
+            selectButtons.forEach(button => {
+                button.disabled = false;
+                button.textContent = '选择对战';
+                button.classList.remove('selected-player1'); // 移除选中状态
+            });
+        });
+
+        selectButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                const charId = event.target.dataset.charId;
+                const charName = event.target.dataset.charName;
+
+                if (player1SelectedCharId === null) {
+                    // 第一次选择：选择玩家1
+                    player1SelectedCharId = charId;
+                    player1SelectedCharName = charName;
+                    selectionPrompt.textContent = `玩家1已选择: ${charName}。请选择玩家2的角色...`;
+                    event.target.disabled = true; // 禁用已选择的按钮
+                    event.target.textContent = '已选择 (玩家1)';
+                    event.target.classList.add('selected-player1'); // 添加选中状态类
+
+                    // 禁用其他已选择的按钮
+                    selectButtons.forEach(btn => {
+                        if (btn.dataset.charId === player1SelectedCharId) {
+                            btn.disabled = true;
+                        } else {
+                            btn.disabled = false; // 确保其他按钮可用
+                            btn.textContent = '选择对战';
+                            btn.classList.remove('selected-player1');
+                        }
+                    });
+
+                } else if (player1SelectedCharId === charId) {
+                    // 再次点击同一个角色，取消选择
+                    player1SelectedCharId = null;
+                    player1SelectedCharName = null;
+                    selectionPrompt.textContent = '请选择玩家1的角色...';
+                    event.target.disabled = false;
+                    event.target.textContent = '选择对战';
+                    event.target.classList.remove('selected-player1');
+                }
+                else {
+                    // 第二次选择：选择玩家2，并开始对战
+                    const player2SelectedCharId = charId;
+                    selectionPrompt.style.display = 'none'; // 隐藏提示
+                    
+                    // 跳转到对战页面
+                    navigate(`/pokemon_battle?player1_id=${player1SelectedCharId}&player2_id=${player2SelectedCharId}`);
+                }
+            });
+        });
+    </script>
 </body>
 </html>

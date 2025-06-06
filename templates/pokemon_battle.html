@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宝可梦式对战</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="main-nav">
+        <a href="/" class="nav-item">
+            🏠 返回主页
+        </a>
+    </nav>
+    <div class="container battle-page-container">
+        <h1>宝可梦式对战</h1>
+        <div class="battle-container">
+            <div class="turn-counter" id="turn-counter">回合数: 1</div>
+            <div class="top-row">
+                <div class="player-section player1">
+                    <div class="player-card-display" id="player1-card-display">
+                        <!-- 玩家1卡片将由JavaScript动态加载 -->
+                        <h3>玩家1</h3>
+                    </div>
+                    <div class="skill-list-display" id="player1-skills-display">
+                        <h3>技能列表</h3>
+                        <!-- 玩家1技能列表将由JavaScript动态加载 -->
+                    </div>
+                </div>
+                <div class="vs-display">
+                    <span class="vs-text">VS</span>
+                    <div id="battle-action-display" class="battle-action-display">
+                        <!-- 招式名称和效果将由JavaScript动态加载 -->
+                    </div>
+                </div>
+                <div class="player-section player2">
+                    <div class="skill-list-display" id="player2-skills-display">
+                        <h3>技能列表</h3>
+                        <!-- 玩家2技能列表将由JavaScript动态加载 -->
+                    </div>
+                    <div class="player-card-display" id="player2-card-display">
+                        <!-- 玩家2卡片将由JavaScript动态加载 -->
+                        <h3>玩家2</h3>
+                    </div>
+                </div>
+            </div>
+
+            <div class="battle-log-section hidden" id="battle-log">
+                <h3>战斗日志</h3>
+                <!-- 战斗日志将由JavaScript动态加载 -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer">
+      © 2025 卡牌游戏角色管理器
+    </footer>
+
+    <script>
+        let battleState = {}; // 用于存储当前战斗状态
+        let player1Id = null;
+        let player2Id = null;
+        let battleActionDisplay = null; // 将 battleActionDisplay 声明为全局变量
+// 移除全局音频变量
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // 从URL参数获取角色ID
+            const urlParams = new URLSearchParams(window.location.search);
+            player1Id = urlParams.get('player1_id');
+            player2Id = urlParams.get('player2_id');
+
+            if (player1Id && player2Id) {
+                initializeBattle(player1Id, player2Id);
+            } else {
+                document.getElementById('battle-log').innerHTML = '<p class="log-entry event-end">错误：缺少玩家角色ID。</p>';
+            }
+        });
+
+        async function initializeBattle(p1Id, p2Id) {
+            try {
+                const response = await fetch('/api/pokemon_battle/init', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ player1_id: p1Id, player2_id: p2Id })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    battleState = data.state;
+                    updateUI();
+                } else {
+                    alert('初始化战斗失败: ' + data.message);
+                    document.getElementById('battle-log').innerHTML = `<p class="log-entry event-end">初始化战斗失败: ${data.message}</p>`;
+                }
+            } catch (error) {
+                console.error('Error initializing battle:', error);
+                alert('初始化战斗时发生网络错误。');
+                document.getElementById('battle-log').innerHTML = `<p class="log-entry event-end">初始化战斗时发生网络错误。</p>`;
+            }
+        }
+
+        function updateUI() {
+            const player1CardDisplay = document.getElementById('player1-card-display');
+            const player2CardDisplay = document.getElementById('player2-card-display');
+            const player1SkillsDisplay = document.getElementById('player1-skills-display');
+            const player2SkillsDisplay = document.getElementById('player2-skills-display');
+            const battleLog = document.getElementById('battle-log');
+            const turnCounter = document.getElementById('turn-counter');
+            battleActionDisplay = document.getElementById('battle-action-display'); // 在这里赋值
+
+            // Clear previous content
+            player1CardDisplay.innerHTML = '<h3>玩家1</h3>';
+            player2CardDisplay.innerHTML = '<h3>玩家2</h3>';
+            player1SkillsDisplay.innerHTML = '<h3>技能列表</h3>';
+            player2SkillsDisplay.innerHTML = '<h3>技能列表</h3>';
+            battleLog.innerHTML = '<h3>战斗日志</h3>';
+
+            if (!battleState || !battleState.characters) {
+                battleLog.innerHTML += '<p class="log-entry">等待战斗初始化...</p>';
+                return;
+            }
+
+            // Update turn counter
+            turnCounter.textContent = `回合数: ${battleState.current_turn}`;
+
+            // Update character cards and skill lists
+            battleState.characters.forEach(char => {
+                const currentHp = Math.max(0, char.current_hp);
+                const maxHp = char.stats.hp;
+                const hpPercentage = (currentHp / maxHp) * 100;
+
+                const charCardContent = `
+                    <div class="character-image-wrapper battle-character-image-wrapper">
+                        <img src="/static/assets/${char.image}" alt="${char.name}" class="character-image battle-character-image">
+                    </div>
+                    <div class="character-info battle-character-info">
+                        <h3>${char.name}</h3>
+                        <p>生命值: ${currentHp.toFixed(0)} / ${maxHp.toFixed(0)}</p>
+                        <div class="hp-bar-container">
+                            <div class="hp-bar">
+                                <div class="hp-fill" style="width: ${hpPercentage}%; background-color: ${hpPercentage > 50 ? 'var(--success)' : (hpPercentage > 20 ? 'var(--warning)' : 'var(--danger)')};"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                const skillsSectionContent = `
+                    ${char.current_hp > 0 && battleState.active_character_id === char.id && !battleState.battle_ended ?
+                        char.skills.map(skill => `<button class="btn-skill" onclick="selectSkill(${char.id}, '${skill.name}')" data-skill-name="${skill.name}">${skill.name}</button>`).join('') :
+                        (char.current_hp <= 0 ? '<p>已阵亡</p>' : '<p>等待行动...</p>')
+                    }
+                `;
+
+                if (battleState.team1_ids.includes(char.id)) {
+                    player1CardDisplay.innerHTML = charCardContent;
+                    player1SkillsDisplay.innerHTML = `<h3>技能列表</h3>${skillsSectionContent}`;
+                } else if (battleState.team2_ids.includes(char.id)) {
+                    player2CardDisplay.innerHTML = charCardContent;
+                    player2SkillsDisplay.innerHTML = `<h3>技能列表</h3>${skillsSectionContent}`;
+                }
+            });
+
+            // Control battle log visibility
+            if (battleState.battle_ended) {
+                battleLog.classList.remove('hidden');
+                if (battleState.battle_log && battleState.battle_log.length > 0) {
+                    battleState.battle_log.forEach(entry => {
+                        const logEntry = document.createElement('p');
+                        logEntry.className = `log-entry event-${entry.event}`;
+                        logEntry.textContent = entry.message;
+                        battleLog.appendChild(logEntry);
+                    });
+                    battleLog.scrollTop = battleLog.scrollHeight; // Scroll to bottom
+                }
+            } else {
+                battleLog.classList.add('hidden');
+            }
+
+            // Disable all skill buttons if battle ended
+            if (battleState.battle_ended) {
+                document.querySelectorAll('.skill-list-display button').forEach(button => {
+                    button.disabled = true;
+                });
+            } else {
+                // Enable current active character's skill buttons
+                document.querySelectorAll('.skill-list-display button').forEach(button => {
+                    button.disabled = true; // Default disable all
+                });
+                const activeChar = battleState.characters.find(c => c.id === battleState.active_character_id);
+                if (activeChar) {
+                    const activeCharSkillsDisplay = battleState.team1_ids.includes(activeChar.id) ? player1SkillsDisplay : player2SkillsDisplay;
+                    activeCharSkillsDisplay.querySelectorAll('button').forEach(button => {
+                        button.disabled = false;
+                    });
+                }
+            }
+        }
+
+        async function selectSkill(characterId, skillName) {
+            if (battleState.battle_ended) {
+                alert('战斗已结束，无法选择技能。');
+                return;
+            }
+            if (battleState.active_character_id !== characterId) {
+                alert('现在不是该角色的回合。');
+                return;
+            }
+
+            // 禁用所有技能按钮，防止重复点击
+            document.querySelectorAll('.skill-list-display button').forEach(button => {
+                button.disabled = true;
+            });
+
+            try {
+                console.log('Sending skill action request:', { battle_id: battleState.battle_id, character_id: characterId, skill_name: skillName });
+                const response = await fetch('/api/pokemon_battle/action', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ battle_id: battleState.battle_id, character_id: characterId, skill_name: skillName })
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server responded with an error:', response.status, errorText);
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+                }
+                const data = await response.json();
+                console.log('Received skill action response:', data);
+
+                if (data.success) {
+                    battleState = data.state;
+                    
+                    // 显示技能名称、效果和伤害动画
+                    battleActionDisplay.innerHTML = ''; // 清空之前的显示
+
+                    if (data.skill_used) {
+                        const skillNameText = document.createElement('div');
+                        skillNameText.classList.add('skill-name-text');
+                        skillNameText.textContent = data.skill_used;
+                        skillNameText.style.color = data.skill_element_color || 'var(--primary)'; // 根据元素设置颜色
+                        battleActionDisplay.appendChild(skillNameText);
+
+                        if (data.effect) {
+                            const skillEffectText = document.createElement('div');
+                            skillEffectText.classList.add('skill-effect-text');
+                            skillEffectText.textContent = data.effect;
+                            battleActionDisplay.appendChild(skillEffectText);
+                        }
+                        
+                        // 播放音效（修复多技能冲突）
+                        if (data.audio) {
+                            const audio = new Audio(`/static/audio/${data.audio}`);
+                            console.log('尝试播放音效:', data.audio);
+                            console.log('完整音效URL:', audio.src);
+                            audio.play().catch(e => console.error("Error playing audio:", e));
+                        }
+
+                        // 动画结束后移除元素
+                        setTimeout(() => {
+                            battleActionDisplay.innerHTML = '';
+                        }, 1500); // 动画持续时间
+                    }
+
+                    if (data.damage_dealt !== undefined) {
+                        const damageNumberText = document.createElement('div');
+                        damageNumberText.classList.add('damage-number-text');
+                        damageNumberText.textContent = `-${data.damage_dealt.toFixed(0)}`;
+                        battleActionDisplay.appendChild(damageNumberText);
+
+                        // 动画结束后移除元素
+                        setTimeout(() => {
+                            battleActionDisplay.innerHTML = '';
+                        }, 1500); // 动画持续时间
+                    }
+
+                    // 攻击动画
+                    if (data.attacker_id && data.target_id) {
+                        const attackerCard = document.querySelector(`#player${battleState.team1_ids.includes(data.attacker_id) ? '1' : '2'}-card-display`);
+                        const targetCard = document.querySelector(`#player${battleState.team1_ids.includes(data.target_id) ? '1' : '2'}-card-display`);
+                        
+                        if (attackerCard) {
+                            attackerCard.classList.add('attack-animation');
+                            setTimeout(() => {
+                                attackerCard.classList.remove('attack-animation');
+                            }, 500); // 攻击动画持续时间
+                        }
+                        if (targetCard) {
+                            targetCard.classList.add('damage-taken-animation');
+                            setTimeout(() => {
+                                targetCard.classList.remove('damage-taken-animation');
+                            }, 500); // 受伤动画持续时间
+                        }
+                    }
+
+                    // 等待动画结束后更新UI
+                    setTimeout(() => {
+                        updateUI();
+                        if (battleState.battle_ended) {
+                            // 如果战斗结束，跳转到结算页面
+                            setTimeout(() => {
+                                navigate(`/battle_result?player1_id=${player1Id}&player2_id=${player2Id}`);
+                            }, 1000); // 留出时间显示最终状态
+                        }
+                    }, 1000); // 确保动画有足够时间播放
+                    
+                } else {
+                    alert('技能使用失败: ' + data.message);
+                    // 重新启用技能按钮
+                    updateUI();
+                }
+            } catch (error) {
+                console.error('Error using skill:', error);
+                alert('使用技能时发生网络错误。');
+                // 重新启用技能按钮
+                updateUI();
+            }
+        }
+
+        // 页面过渡JS (从index.html复制过来，确保所有页面都有)
+        function navigate(path) {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+                window.location.href = path;
+            }, 300);
+        }
+
+        // 涟漪效果JS (从index.html复制过来，确保所有页面都有)
+        document.querySelectorAll('button, .btn-primary, .btn-secondary, .btn-skill').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const ripple = document.createElement('span');
+                ripple.classList.add('ripple');
+                const rect = btn.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
+                ripple.style.width = ripple.style.height = `${size}px`;
+                ripple.style.left = `${x}px`;
+                ripple.style.top = `${y}px`;
+                btn.appendChild(ripple);
+                
+                setTimeout(() => {
+                    ripple.remove();
+                }, 600);
+            });
+        });
+    </script>
+</body>
+</html>

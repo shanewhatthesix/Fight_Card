@@ -15,6 +15,8 @@
     *   支持大乱斗模式（所有角色参战）。
     *   详细的战斗步骤记录，展示每回合的行动和伤害计算。
     *   战斗结束后显示最终结果和角色统计数据（造成伤害、承受伤害）。
+*   **截图展示**：
+    *   提供应用界面和战斗过程的截图，直观展示功能。
 *   **胜率统计**：
     *   记录每个角色的总战斗次数和胜利次数，并计算胜率。
 *   **元素系统**：
@@ -24,7 +26,7 @@
 ## 技术栈
 
 *   **后端**：Python 3, Flask
-*   **前端**：HTML, CSS, JavaScript
+*   **前端**：HTML, CSS, JavaScript (可能包含 jQuery 或其他库用于DOM操作和动画)
 *   **数据存储**：JSON 文件
 
 ## 文件结构
@@ -33,7 +35,8 @@
 .
 ├── app.py                  # Flask 主应用程序，处理路由、角色管理和战斗请求
 ├── battle.py               # 战斗模拟逻辑，包括 1v1, 2v2 和大乱斗模式
-├── character_manager.py    # 角色数据加载和保存（可能已集成到 app.py 或 battle.py 中）
+├── character_manager.py    # 角色数据加载和保存
+├── design-system.md        # 设计系统文档
 ├── data/
 │   ├── characters.json     # 存储角色数据
 │   └── win_rates.json      # 存储角色胜率数据
@@ -42,13 +45,16 @@
 │   │   ├── *.jpg
 │   │   ├── *.gif
 │   │   └── ...
+│   ├── audio/              # 存储音频文件
+│   │   └── *.mp3
 │   └── css/
 │       └── style.css       # 样式文件
 └── templates/
     ├── index.html          # 角色列表和主页
     ├── edit.html           # 角色编辑页面
     ├── battle_result.html  # 战斗结果展示页面
-    └── douququ.html        # 斗蛐蛐模式页面（可能是一个特定的战斗入口）
+    ├── douququ.html        # 斗蛐蛐模式页面
+    └── pokemon_battle.html # 宝可梦风格战斗页面
 ```
 
 ## 如何运行
@@ -58,16 +64,24 @@
     git clone <仓库地址>
     cd <项目目录>
     ```
-2.  **安装 Python 依赖**：
+2.  **创建并激活虚拟环境** (推荐):
+    ```bash
+    python -m venv venv
+    # Windows
+    .\venv\Scripts\activate
+    # macOS/Linux
+    source venv/bin/activate
+    ```
+3.  **安装 Python 依赖**：
     确保你已经安装了 Python 3。然后安装 Flask：
     ```bash
     pip install Flask
     ```
-3.  **运行应用程序**：
+4.  **运行应用程序**：
     ```bash
     python app.py
     ```
-4.  **访问应用**：
+5.  **访问应用**：
     在浏览器中打开 `http://127.0.0.1:5000/`。
 
 ## 使用说明
@@ -75,5 +89,5 @@
 *   在主页上，你可以看到所有已创建的角色。
 *   点击“创建新角色”按钮来添加一个新角色。
 *   点击角色的“编辑”按钮来修改其属性、技能和上传媒体文件。
-*   在主页上选择角色进行 1v1 或 2v2 战斗，或进入大乱斗模式。
+*   在主页上选择角色进行 1v1 或 2v2 战斗，或进入大乱斗模式。你也可以尝试“斗蛐蛐”或“宝可梦风格战斗”模式。
 *   战斗结果页面将显示详细的战斗过程和最终胜负。

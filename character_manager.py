@@ -2,7 +2,8 @@
 import json
 import os
 import tkinter as tk
-from tkinter import ttk, messagebox, scrolledtext
+from tkinter import ttk, messagebox, scrolledtext, filedialog
+import shutil
 
 DATA_FILE = 'data/characters.json'
 ELEMENTS = ["金", "木", "水", "火", "土", "风", "雷", "毒", "法", "圣", "精神"]
@@ -109,7 +110,6 @@ class CharacterManagerGUI:
             details_str = f"ID: {character['id']}\n"
             details_str += f"姓名: {character['name']}\n"
             details_str += f"HP: {character['stats']['hp']}\n"
-            details_str += f"攻击: {character['stats']['atk']}\n"
             details_str += "技能:\n"
             for skill in character['skills']:
                 details_str += f"  - 名称: {skill['name']}, 效果: {skill['effect']}, 伤害: {skill['damage']}\n"
@@ -213,26 +213,23 @@ class AddEditCharacterWindow(tk.Toplevel):
         self.image_entry = ttk.Entry(self.scrollable_frame, width=40)
         self.image_entry.grid(row=2, column=1, sticky=tk.EW, pady=2)
 
-        ttk.Label(self.scrollable_frame, text="音频文件名:").grid(row=3, column=0, sticky=tk.W, pady=2)
-        self.audio_entry = ttk.Entry(self.scrollable_frame, width=40)
-        self.audio_entry.grid(row=3, column=1, sticky=tk.EW, pady=2)
+        ttk.Label(self.scrollable_frame, text="角色音效:").grid(row=3, column=0, sticky=tk.W, pady=2)
+        self.audio_frame = ttk.Frame(self.scrollable_frame)
+        self.audio_frame.grid(row=3, column=1, sticky=tk.EW, pady=2)
+
+        self.audio_filename_label = ttk.Label(self.audio_frame, text="未选择文件")
+        self.audio_filename_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        self.audio_button = ttk.Button(self.audio_frame, text="选择文件", command=lambda: self.select_audio_file(self.audio_filename_label))
+        self.audio_button.pack(side=tk.RIGHT)
 
         ttk.Label(self.scrollable_frame, text="元素:").grid(row=4, column=0, sticky=tk.W, pady=2)
         self.element_entry = ttk.Entry(self.scrollable_frame, width=40)
         self.element_entry.grid(row=4, column=1, sticky=tk.EW, pady=2)
 
-        # 攻击属性
-        ttk.Label(self.scrollable_frame, text="攻击属性:").grid(row=5, column=0, sticky=tk.W, pady=5)
-        self.atk_entries = {}
-        for i, elem in enumerate(ELEMENTS):
-            ttk.Label(self.scrollable_frame, text=f"  {elem}:").grid(row=6+i, column=0, sticky=tk.W, padx=10)
-            entry = ttk.Entry(self.scrollable_frame, width=10)
-            entry.grid(row=6+i, column=1, sticky=tk.W)
-            self.atk_entries[elem] = entry
-        
         # 技能
         self.skill_frame = ttk.LabelFrame(self.scrollable_frame, text="技能", padding="5")
-        self.skill_frame.grid(row=6+len(ELEMENTS), column=0, columnspan=2, sticky=tk.EW, pady=10)
+        self.skill_frame.grid(row=5, column=0, columnspan=2, sticky=tk.EW, pady=10)
         self.skills_data = [] # 存储技能数据
         self.skill_widgets = [] # 存储技能相关的Entry和Button
         self.add_skill_button = ttk.Button(self.skill_frame, text="添加技能", command=self.add_skill_field)
@@ -256,11 +253,8 @@ class AddEditCharacterWindow(tk.Toplevel):
         self.name_entry.insert(0, self.character['name'])
         self.hp_entry.insert(0, self.character['stats']['hp'])
         self.image_entry.insert(0, self.character['image'])
-        self.audio_entry.insert(0, self.character['audio'])
+        self.audio_filename_label.config(text=self.character['audio'])
         self.element_entry.insert(0, self.character['element'])
-
-        for elem, entry in self.atk_entries.items():
-            entry.insert(0, self.character['stats']['atk'].get(elem, 0))
         
         self.skills_data = self.character['skills'][:] # 复制一份，避免直接修改
         self.render_skills()
@@ -277,7 +271,7 @@ class AddEditCharacterWindow(tk.Toplevel):
         skill_name_label.grid(row=0, column=0, sticky=tk.W)
         skill_name_entry = ttk.Entry(skill_row_frame, width=30)
         skill_name_entry.grid(row=0, column=1, sticky=tk.EW)
-
+        
         skill_effect_label = ttk.Label(skill_row_frame, text="技能效果:")
         skill_effect_label.grid(row=1, column=0, sticky=tk.W)
         skill_effect_entry = ttk.Entry(skill_row_frame, width=30)
@@ -293,6 +287,18 @@ class AddEditCharacterWindow(tk.Toplevel):
             entry.grid(row=i//4, column=(i%4)*2+1, sticky=tk.W)
             damage_entries[elem] = entry
 
+        skill_audio_label = ttk.Label(skill_row_frame, text="音效文件:")
+        skill_audio_label.grid(row=3, column=0, sticky=tk.W)
+
+        skill_audio_frame = ttk.Frame(skill_row_frame)
+        skill_audio_frame.grid(row=3, column=1, sticky=tk.EW)
+
+        skill_audio_filename_label = ttk.Label(skill_audio_frame, text=skill_data.get('audio', '') if skill_data else "未选择文件")
+        skill_audio_filename_label.pack(side=tk.LEFT, fill=tk.X, expand=True)
+
+        skill_audio_button = ttk.Button(skill_audio_frame, text="选择文件", command=lambda: self.select_audio_file(skill_audio_filename_label))
+        skill_audio_button.pack(side=tk.RIGHT)
+
         remove_button = ttk.Button(skill_row_frame, text="移除技能", command=lambda: self.remove_skill_field(skill_row_frame))
         remove_button.grid(row=0, column=2, sticky=tk.E)
 
@@ -300,7 +306,8 @@ class AddEditCharacterWindow(tk.Toplevel):
             "frame": skill_row_frame,
             "name_entry": skill_name_entry,
             "effect_entry": skill_effect_entry,
-            "damage_entries": damage_entries
+            "damage_entries": damage_entries,
+            "audio_filename_label": skill_audio_filename_label # 存储Label控件
         })
 
         if skill_data:
@@ -309,11 +316,33 @@ class AddEditCharacterWindow(tk.Toplevel):
             for elem, val in skill_data.get('damage', {}).items():
                 if elem in damage_entries:
                     damage_entries[elem].insert(0, val)
+            # 文件名已经在Label中设置
         
         # 重新打包添加技能按钮，确保它总是在最后
         self.add_skill_button.pack_forget()
         self.add_skill_button.pack(pady=5)
         self.update_scroll_region()
+
+    def select_audio_file(self, filename_label):
+        """打开文件选择对话框并复制选定的音频文件"""
+        file_path = filedialog.askopenfilename(
+            initialdir="./static/audio", # 默认打开audio目录
+            title="选择音效文件",
+            filetypes=(("MP3 files", "*.mp3"), ("All files", "*.*"))
+        )
+        if file_path:
+            try:
+                # 获取文件名
+                file_name = os.path.basename(file_path)
+                # 构建目标路径
+                destination_path = os.path.join("static", "audio", file_name)
+                # 复制文件
+                shutil.copy2(file_path, destination_path)
+                # 更新Label显示
+                filename_label.config(text=file_name)
+                messagebox.showinfo("成功", f"文件 '{file_name}' 已复制到 static/assets/")
+            except Exception as e:
+                messagebox.showerror("错误", f"复制文件时发生错误: {e}")
 
     def remove_skill_field(self, frame_to_remove):
         """移除技能输入字段"""
@@ -400,13 +429,8 @@ class AddEditCharacterWindow(tk.Toplevel):
             name = self.name_entry.get()
             hp = int(self.hp_entry.get())
             image = self.image_entry.get()
-            audio = self.audio_entry.get()
+            audio = self.audio_filename_label.cget("text")
             element = self.element_entry.get()
-
-            atk = {}
-            for elem, entry in self.atk_entries.items():
-                val = entry.get()
-                atk[elem] = int(val) if val else 0
 
             skills = []
             for skill_widget in self.skill_widgets:
@@ -416,7 +440,8 @@ class AddEditCharacterWindow(tk.Toplevel):
                 for elem, entry in skill_widget["damage_entries"].items():
                     val = entry.get()
                     skill_damage[elem] = int(val) if val else 0
-                skills.append({"name": skill_name, "effect": skill_effect, "damage": skill_damage})
+                skill_audio = skill_widget["audio_filename_label"].cget("text") # 从Label获取文件名
+                skills.append({"name": skill_name, "effect": skill_effect, "damage": skill_damage, "audio": skill_audio})
 
             attributes = []
             for attr_widget in self.attribute_widgets:
@@ -431,7 +456,7 @@ class AddEditCharacterWindow(tk.Toplevel):
                 # 编辑现有角色
                 self.character.update({
                     "name": name,
-                    "stats": {"hp": hp, "atk": atk},
+                    "stats": {"hp": hp},
                     "skills": skills,
                     "image": image,
                     "audio": audio,
@@ -445,7 +470,7 @@ class AddEditCharacterWindow(tk.Toplevel):
                 new_character = {
                     "id": new_id,
                     "name": name,
-                    "stats": {"hp": hp, "atk": atk},
+                    "stats": {"hp": hp},
                     "skills": skills,
                     "image": image,
                     "audio": audio,
@@ -461,7 +486,7 @@ class AddEditCharacterWindow(tk.Toplevel):
                 self.destroy() # 关闭窗口
             
         except ValueError:
-            messagebox.showerror("输入错误", "HP、攻击和伤害属性必须是有效的数字。")
+            messagebox.showerror("输入错误", "HP 和伤害属性必须是有效的数字。")
         except Exception as e:
             messagebox.showerror("错误", f"保存角色时发生错误: {e}")
 

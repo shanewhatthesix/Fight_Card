@@ -6,11 +6,17 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <nav class="main-nav">
+        <a href="/" class="nav-item">
+            🏠 返回主页
+        </a>
+    </nav>
     <h1>编辑角色: {{ character.name }}</h1>
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" class="form-container">
+       <div id="character-data" style="display:none;">{{ character | tojson | safe }}</div>
         <div class="form-group">
             <label>名称:
-                <input type="text" name="name" value="{{ character.name }}">
+                <input type="text" name="name" value="{{ character.name }}" class="form-input">
             </label>
         </div>
         
@@ -18,142 +24,302 @@
             <h2>属性</h2>
             <div class="form-group">
                 <label>HP:
-                    <input type="number" name="hp" value="{{ character.stats.hp }}">
+                    <input type="number" name="hp" value="{{ character.stats.hp }}" class="form-input">
                 </label>
-            </div>
-            <h3>攻击力 (按元素):</h3>
-            <div class="element-stats">
-                {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
-                <label>{{ element }}:
-                    <input type="number" name="atk_{{ element }}" value="{{ character.stats.atk.get(element, 0) }}">
-                </label>
-                {% endfor %}
             </div>
         </div>
         
         <div class="form-section">
             <h2>技能</h2>
-            <div id="skills-container">
-                {% for skill in character.skills %}
-                <div class="skill-row">
-                    <input type="text" name="skill_name_{{ loop.index0 }}" placeholder="技能名称" value="{{ skill.name }}">
-                    <input type="text" name="skill_effect_{{ loop.index0 }}" placeholder="技能效果" value="{{ skill.effect }}">
-                    <div class="skill-damage">
-                        {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
-                        <label>{{ element }}:
-                            <input type="number" name="skill_damage_{{ loop.index0 }}_{{ element }}" value="{{ skill.damage.get(element, 0) }}">
-                        </label>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="field-controls">
+                <button type="button" onclick="toggleAllFields('skill', 'block')" class="btn-secondary">全部展开</button>
+                <button type="button" onclick="toggleAllFields('skill', 'none')" class="btn-secondary">全部折叠</button>
             </div>
-            <button type="button" onclick="addSkillField()" class="add-btn">添加技能</button>
+            <div id="skills-container" class="sortable-list">
+                <!-- 技能将由JavaScript动态加载 -->
+            </div>
+            <button type="button" id="add-skill-btn" class="btn-secondary add-btn">添加技能</button>
         </div>
         
         <div class="form-section">
             <h2>特性</h2>
-            <div id="attributes-container">
-                {% for attr in character.attributes %}
-                <div class="attribute-row">
-                    <input type="text" name="attribute_name_{{ loop.index0 }}" placeholder="特性名称" value="{{ attr.name }}">
-                    <div class="attribute-resistance">
-                        {% for element in ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'] %}
-                        <label>{{ element }}:
-                            <input type="number" name="attr_resistance_{{ loop.index0 }}_{{ element }}" value="{{ attr.resistance.get(element, 0) }}">
-                        </label>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endfor %}
+            <div class="field-controls">
+                <button type="button" onclick="toggleAllFields('attribute', 'block')" class="btn-secondary">全部展开</button>
+                <button type="button" onclick="toggleAllFields('attribute', 'none')" class="btn-secondary">全部折叠</button>
             </div>
-            <button type="button" onclick="addAttributeField()" class="add-btn">添加特性</button>
+            <div id="attributes-container" class="sortable-list">
+                <!-- 特性将由JavaScript动态加载 -->
+            </div>
+            <button type="button" id="add-attribute-btn" class="btn-secondary add-btn">添加特性</button>
         </div>
         
         <div class="form-group">
             <label>元素:
-                <input type="text" name="element" value="{{ character.element if character.element is defined else '' }}">
+                <input type="text" name="element" value="{{ character.element if character.element is defined else '' }}" class="form-input">
             </label>
         </div>
 
         <div class="form-group">
             <label for="image">角色图片:</label>
-            <input type="file" name="image" id="image" accept="image/*">
+            <input type="file" name="image" id="image" accept="image/*" class="form-input">
+        </div>
+
+        <div class="form-group">
+            <label for="audio">角色音效:</label>
+            <input type="file" name="audio" id="audio" accept="audio/mp3" class="form-input">
+            {% if character.audio %}<p>当前文件: {{ character.audio }}</p>{% endif %}
         </div>
 
         <div class="form-actions">
-            <button type="submit" class="save-btn">保存</button>
+            <button type="submit" class="btn-primary save-btn">保存</button>
         </div>
     </form>
     
+    <footer class="main-footer">
+      © 2025 卡牌游戏角色管理器
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.14.0/Sortable.min.js"></script>
     <script>
-        function addSkillField() {
-            const container = document.getElementById('skills-container');
-            const div = document.createElement('div');
-            div.className = 'skill-row';
-            
-            const newIndex = container.children.length;
-
-            const nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.name = `skill_name_${newIndex}`;
-            nameInput.placeholder = '技能名称';
-            
-            const effectInput = document.createElement('input');
-            effectInput.type = 'text';
-            effectInput.name = `skill_effect_${newIndex}`;
-            effectInput.placeholder = '技能效果';
-            
-            const damageDiv = document.createElement('div');
-            damageDiv.className = 'skill-damage';
-            const elements = ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'];
-            elements.forEach(element => {
-                const label = document.createElement('label');
-                label.textContent = element + ': ';
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.name = `skill_damage_${newIndex}_${element}`;
-                input.value = 0;
-                label.appendChild(input);
-                damageDiv.appendChild(label);
+        (function() { // IIFE 开始
+            // 涟漪效果JS (保留)
+            document.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    const rect = btn.getBoundingClientRect();
+                    const size = Math.max(rect.width, rect.height);
+                    const x = e.clientX - rect.left - size / 2;
+                    const y = e.clientY - rect.top - size / 2;
+                    ripple.style.width = ripple.style.height = `${size}px`;
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+                    btn.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
             });
 
-            div.appendChild(nameInput);
-            div.appendChild(effectInput);
-            div.appendChild(damageDiv);
-            container.appendChild(div);
-        }
-        
-        function addAttributeField() {
-            const container = document.getElementById('attributes-container');
-            const div = document.createElement('div');
-            div.className = 'attribute-row';
+            const ELEMENTS = ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'];
 
-            const newIndex = container.children.length;
+            function escapeHtml(unsafe) {
+                return unsafe
+                    .replace(/&/g, "&")
+                    .replace(/</g, "<")
+                    .replace(/>/g, ">")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
 
-            const nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.name = `attribute_name_${newIndex}`;
-            nameInput.placeholder = '特性名称';
+            // 动态生成技能/特性字段的通用函数
+            function createFieldRow(type, index, data = {}) {
+                const div = document.createElement('div');
+                div.className = `${type}-row`;
+                div.dataset.index = index; // 用于排序和识别
 
-            const resistanceDiv = document.createElement('div');
-            resistanceDiv.className = 'attribute-resistance';
-            const elements = ['金', '木', '水', '火', '土', '风', '雷', '毒', '法', '圣', '精神'];
-            elements.forEach(element => {
-                const label = document.createElement('label');
-                label.textContent = element + ': ';
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.name = `attr_resistance_${newIndex}_${element}`;
-                input.value = 0;
-                label.appendChild(input);
-                resistanceDiv.appendChild(label);
+                let content = '';
+                if (type === 'skill') {
+                    content = `
+                        <input type="text" name="skill_name_${index}" placeholder="技能名称" value="${escapeHtml(data.name || '')}" class="form-input" required>
+                        <input type="text" name="skill_effect_${index}" placeholder="技能效果" value="${escapeHtml(data.effect || '')}" class="form-input">
+                        <div class="skill-damage">
+                            ${ELEMENTS.map(element => `
+                                <label>${element}:
+                                    <input type="number" name="skill_damage_${index}_${element}" value="${data.damage ? data.damage[element] || 0 : 0}" class="form-input">
+                                </label>
+                            `).join('')}
+                        </div>
+                        <label>音效文件:
+                            <input type="file" name="skill_audio_${index}" accept="audio/mp3" class="form-input">
+                            ${data.audio ? `<p>当前文件: ${escapeHtml(data.audio)}</p>` : ''}
+                        </label>
+                    `;
+                } else if (type === 'attribute') {
+                    content = `
+                        <input type="text" name="attribute_name_${index}" placeholder="特性名称" value="${escapeHtml(data.name || '')}" class="form-input" required>
+                        <div class="attribute-resistance">
+                            ${ELEMENTS.map(element => `
+                                <label>${element}:
+                                    <input type="number" name="attr_resistance_${index}_${element}" value="${data.resistance ? data.resistance[element] || 0 : 0}" class="form-input">
+                                </label>
+                            `).join('')}
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div class="field-header" onclick="toggleFieldContent(this)">
+                        <span class="drag-handle">☰</span>
+                        <span class="field-title">${type === 'skill' ? (data.name || '新技能') : (data.name || '新特性')}</span>
+                        <button type="button" class="btn-delete" onclick="event.stopPropagation(); removeField(this, '${type}')">删除</button>
+                        <span class="toggle-icon">▼</span>
+                    </div>
+                    <div class="field-content">
+                        ${content}
+                    </div>
+                `;
+
+                // 添加实时验证监听器
+                const nameInput = div.querySelector(`input[name^="${type}_name_"]`);
+                if (nameInput) {
+                    nameInput.addEventListener('input', (e) => {
+                        if (e.target.value.trim() === '') {
+                            e.target.classList.add('is-invalid');
+                        } else {
+                            e.target.classList.remove('is-invalid');
+                        }
+                    });
+                }
+
+                // 添加数字输入验证监听器
+                div.querySelectorAll('input[type="number"]').forEach(numberInput => {
+                    numberInput.addEventListener('input', (e) => {
+                        const value = e.target.value;
+                        // 检查是否为空字符串或有效的非负数字
+                        if (value.trim() === '' || (Number(value) >= 0 && !isNaN(value))) {
+                            e.target.classList.remove('is-invalid');
+                        } else {
+                            e.target.classList.add('is-invalid');
+                        }
+                    });
+                });
+
+                return div;
+            }
+
+            // 添加技能字段
+            function addSkillField(data = {}) {
+                const container = document.getElementById('skills-container');
+                const newIndex = container.children.length;
+                const newSkillRow = createFieldRow('skill', newIndex, data);
+                container.appendChild(newSkillRow);
+            }
+
+            // 添加特性字段
+            function addAttributeField(data = {}) {
+                const container = document.getElementById('attributes-container');
+                const newIndex = container.children.length;
+                const newAttributeRow = createFieldRow('attribute', newIndex, data);
+                container.appendChild(newAttributeRow);
+            }
+
+            // 删除字段
+            function removeField(button, type) {
+                const row = button.closest(`.${type}-row`);
+                if (row) {
+                    if (confirm(`确定要删除这个${type === 'skill' ? '技能' : '特性'}吗？`)) {
+                        row.remove();
+                        // 重新索引，确保提交时名称正确
+                        reindexFields(type);
+                    }
+                }
+            }
+
+            // 重新索引字段名称
+            function reindexFields(type) {
+                const container = document.getElementById(`${type}s-container`);
+                Array.from(container.children).forEach((row, index) => {
+                    row.dataset.index = index;
+                    // 更新标题
+                    const titleSpan = row.querySelector('.field-title');
+                    if (titleSpan) {
+                        const nameInput = row.querySelector(`input[name^="${type}_name_"]`);
+                        if (nameInput) {
+                            titleSpan.textContent = nameInput.value || (type === 'skill' ? '新技能' : '新特性');
+                        }
+                    }
+                    row.querySelectorAll('[name]').forEach(input => {
+                        const oldName = input.name;
+                        // 替换旧索引为新索引
+                        const newName = oldName.replace(/_(\d+)_/, `_${index}_`).replace(/_(\d+)$/, `_${index}`);
+                        input.name = newName;
+                    });
+                    // 更新标题
+                    const currentTitleSpan = row.querySelector('.field-title');
+                    if (currentTitleSpan) {
+                        const nameInput = row.querySelector(`input[name^="${type}_name_"]`);
+                        if (nameInput) {
+                            currentTitleSpan.textContent = nameInput.value || (type === 'skill' ? '新技能' : '新特性');
+                        }
+                    }
+                });
+            }
+
+            // 折叠/展开内容
+            function toggleFieldContent(header) {
+                const content = header.nextElementSibling;
+                const toggleIcon = header.querySelector('.toggle-icon');
+                if (content.style.display === 'none' || content.style.display === '') {
+                    content.style.display = 'block';
+                    toggleIcon.textContent = '▼';
+                } else {
+                    content.style.display = 'none';
+                    toggleIcon.textContent = '▶';
+                }
+            }
+
+            // 全部折叠/展开
+            function toggleAllFields(type, displayStyle) {
+                const container = document.getElementById(`${type}s-container`);
+                Array.from(container.children).forEach(row => {
+                    const content = row.querySelector('.field-content');
+                    const toggleIcon = row.querySelector('.toggle-icon');
+                    if (content) {
+                        content.style.display = displayStyle;
+                        toggleIcon.textContent = displayStyle === 'block' ? '▼' : '▶';
+                    }
+                });
+            }
+
+            // 初始化现有数据
+            document.addEventListener('DOMContentLoaded', () => {
+                const characterData = JSON.parse(document.getElementById('character-data').textContent);
+
+                if (characterData && characterData.skills) {
+                    characterData.skills.forEach(skill => addSkillField(skill));
+                }
+                if (characterData && characterData.attributes) {
+                    characterData.attributes.forEach(attr => addAttributeField(attr));
+                }
+
+                // 初始化SortableJS
+                new Sortable(document.getElementById('skills-container'), {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    onEnd: function (evt) {
+                        reindexFields('skill');
+                    }
+                });
+
+                new Sortable(document.getElementById('attributes-container'), {
+                    animation: 150,
+                    handle: '.drag-handle',
+                    onEnd: function (evt) {
+                        reindexFields('attribute');
+                    }
+                });
+
+                // 为所有名称输入框添加事件监听器，实时更新标题
+                document.querySelectorAll('input[name^="skill_name_"], input[name^="attribute_name_"]').forEach(input => {
+                    input.addEventListener('input', (e) => {
+                        const row = e.target.closest('.skill-row, .attribute-row');
+                        if (row) {
+                            const type = row.classList.contains('skill-row') ? 'skill' : 'attribute';
+                            const titleSpan = row.querySelector('.field-title');
+                            if (titleSpan) {
+                                titleSpan.textContent = e.target.value || (type === 'skill' ? '新技能' : '新特性');
+                            }
+                        }
+                    });
+                });
+
+                // 为“添加技能”和“添加特性”按钮添加事件监听器
+                document.getElementById('add-skill-btn').addEventListener('click', addSkillField);
+                document.getElementById('add-attribute-btn').addEventListener('click', addAttributeField);
             });
-
-            div.appendChild(nameInput);
-            div.appendChild(resistanceDiv);
-            container.appendChild(div);
-        }
-    </script>
+        })(); // IIFE 结束
+</script>
 </body>
 </html>
